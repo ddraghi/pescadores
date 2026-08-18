@@ -17,7 +17,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset --force && npm run db:seed",
-    "setup": "prisma generate && prisma migrate dev --name init && npm run db:seed"
+    "setup": "prisma generate && prisma migrate dev --name init"
   },
   "dependencies": {
     "@prisma/client": "^6.3.0",
