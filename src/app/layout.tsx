@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Hanken_Grotesk, Geist_Mono } from 'next/font/google';
+import { ProveedorTema } from '@/components/tema';
 import './globals.css';
 
 // Las mismas familias que netgym: el cliente ya reconoce ese lenguaje visual.
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${hanken.variable} ${geistMono.variable} antialiased`}
         style={{ ['--font-headline' as string]: 'var(--font-body)' }}
       >
-        {children}
+        <ProveedorTema>{children}</ProveedorTema>
       </body>
     </html>
   );

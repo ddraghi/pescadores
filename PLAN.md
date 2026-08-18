@@ -19,14 +19,16 @@ reales, y este plan.
 
 ---
 
-## Etapa 1 — Identidad y permisos
-**~1-2 sesiones**
+## Etapa 1 — Identidad y permisos ✅
+**~1 sesión · HECHA**
 
 - Login único que resuelve el rol y redirige al panel que corresponde
-- Sesión con cookie firmada + middleware que cierra el perímetro
-- `src/lib/roles.ts`: matriz de permisos y cadena de designación
-- Layout del panel: barra lateral por rol, encabezado, tema claro/oscuro
-- Un panel mínimo por cada uno de los once roles, ya respetando permisos
+- Sesión con cookie firmada (`jose`) + middleware que **verifica la firma** en Edge
+- Doce paneles, uno por rol, cada uno exigiendo su capacidad
+- Barra lateral por rol con el menú completo: lo construido enlaza, lo pendiente se
+  muestra apagado con su número de etapa
+- Cambio de rol para quien acumula más de uno
+- Tema claro y oscuro
 
 **Queda funcionando:** entrás con cualquier rol y ves lo tuyo, y sólo lo tuyo.
 

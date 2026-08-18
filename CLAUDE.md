@@ -13,7 +13,14 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
 
-**Etapa 0 (cimientos): hecha.** Etapa 1 (identidad y permisos): siguiente.
+**Etapas 0 y 1 hechas.** Siguiente: etapa 2, estructura del club (ABM del Secretario).
+
+Al terminar una etapa hay que subir `ETAPA_ACTUAL` en `src/lib/menus.ts`: eso enciende
+solos los ítems de menú de esa etapa.
+
+Cuentas de prueba (semilla): `admin`, `secretario`, `tesorero`, `cobrador`, `jefenihuil`,
+`portero`, `control`, `maestranza`, `medico`, `profesor`, `concesion`, `socio`.
+Todas con la contraseña `pescadores`.
 
 ---
 
@@ -48,6 +55,20 @@ npm run db:studio  # explorar la base
    estatuto).
 6. **`src/lib/roles.ts` es la única fuente de verdad de permisos.** Nunca chequear un rol
    a mano en una pantalla: usar `puede()`, `puedeAlguno()`, `puedeDesignar()`.
+7. **Cada página vuelve a exigir su capacidad** con `exigirCapacidad()`, aunque el
+   middleware ya haya filtrado por ruta. El perímetro no es el control de acceso.
+
+## Cómo está armada la sesión
+
+`src/lib/sesion.ts` firma y verifica el token, y **no importa `next/headers` ni Prisma a
+propósito**: lo usa el middleware, que corre en Edge. Todo lo que necesite leer cookies o
+la base va en `src/lib/auth.ts`.
+
+Como `jose` sí funciona en Edge, el middleware **verifica la firma**, no sólo que la
+cookie exista — que es lo único que puede hacer netgym. Un token adulterado no pasa.
+
+Las rutas de panel viven en `src/lib/rutas.ts`, en texto plano y sin importar Prisma, por
+la misma razón. `roles.ts` las toma de ahí: una sola definición.
 
 ---
 

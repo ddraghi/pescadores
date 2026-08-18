@@ -10,6 +10,7 @@
  */
 
 import { Rol } from '@prisma/client';
+import { RUTA_POR_ROL } from '@/lib/rutas';
 
 export { Rol };
 
@@ -64,7 +65,7 @@ export type Capacidad =
 export const ROLES: Record<Rol, DefinicionRol> = {
   ADMIN_GENERAL: {
     etiqueta: 'Administrador General',
-    ruta: '/admin',
+    ruta: RUTA_POR_ROL.ADMIN_GENERAL,
     alcance: 'club',
     designa: [Rol.SECRETARIO, Rol.TESORERO],
     puede: [
@@ -78,7 +79,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   SECRETARIO: {
     etiqueta: 'Secretario',
-    ruta: '/secretaria',
+    ruta: RUTA_POR_ROL.SECRETARIO,
     alcance: 'club',
     // Designa a todos menos a sí mismo y al Tesorero, que dependen del Administrador.
     // El Cobrador tampoco: lo da de alta el Tesorero, de quien depende.
@@ -104,7 +105,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   TESORERO: {
     etiqueta: 'Tesorero',
-    ruta: '/tesoreria',
+    ruta: RUTA_POR_ROL.TESORERO,
     alcance: 'club',
     designa: [Rol.COBRADOR],
     puede: [
@@ -121,7 +122,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   COBRADOR: {
     etiqueta: 'Cobrador',
-    ruta: '/cobranza',
+    ruta: RUTA_POR_ROL.COBRADOR,
     alcance: 'propio',
     designa: [],
     puede: ['cobrar_domicilio'],
@@ -129,7 +130,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   JEFE_PREDIO: {
     etiqueta: 'Jefe de predio',
-    ruta: '/predio',
+    ruta: RUTA_POR_ROL.JEFE_PREDIO,
     alcance: 'predio',
     designa: [],
     puede: [
@@ -143,7 +144,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   PORTERO: {
     etiqueta: 'Portero',
-    ruta: '/porteria',
+    ruta: RUTA_POR_ROL.PORTERO,
     alcance: 'predio',
     designa: [],
     puede: ['operar_porteria', 'cobrar', 'ver_socios', 'fichar'],
@@ -151,7 +152,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   CONTROL_PASO: {
     etiqueta: 'Punto de control',
-    ruta: '/control',
+    ruta: RUTA_POR_ROL.CONTROL_PASO,
     alcance: 'predio',
     designa: [],
     // Deliberadamente sin 'cobrar' ni 'ver_cobranzas': este puesto no toca dinero.
@@ -160,7 +161,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   MAESTRANZA: {
     etiqueta: 'Maestranza',
-    ruta: '/maestranza',
+    ruta: RUTA_POR_ROL.MAESTRANZA,
     alcance: 'predio',
     designa: [],
     // Funciones pendientes de definición: por ahora sólo ficha entrada y salida.
@@ -169,7 +170,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   PROFESOR: {
     etiqueta: 'Profesor',
-    ruta: '/profesor',
+    ruta: RUTA_POR_ROL.PROFESOR,
     alcance: 'propio',
     designa: [],
     puede: ['administrar_grupos', 'ver_socios', 'fichar'],
@@ -177,7 +178,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   CONCESIONARIO: {
     etiqueta: 'Concesionario',
-    ruta: '/concesion',
+    ruta: RUTA_POR_ROL.CONCESIONARIO,
     alcance: 'propio',
     designa: [],
     // Alcance pendiente de definición.
@@ -186,7 +187,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   MEDICO: {
     etiqueta: 'Médico',
-    ruta: '/medico',
+    ruta: RUTA_POR_ROL.MEDICO,
     alcance: 'club',
     designa: [],
     puede: ['emitir_apto_medico', 'ver_socios'],
@@ -194,7 +195,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
 
   SOCIO: {
     etiqueta: 'Socio',
-    ruta: '/socio',
+    ruta: RUTA_POR_ROL.SOCIO,
     alcance: 'propio',
     designa: [],
     puede: ['panel_socio'],
