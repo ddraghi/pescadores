@@ -1,0 +1,29 @@
+# Postgres para desarrollo local.
+#
+#   docker compose up -d
+#
+# Si preferís no usar Docker, instalá PostgreSQL nativo para Windows y dejá la misma
+# cadena de conexión del .env.example. Da igual: lo importante es que en desarrollo
+# corra el MISMO motor que en producción, para no llevarse sorpresas al migrar.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: pescadores-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pescadores
+    ports:
+      - '5432:5432'
+    volumes:
+      - pescadores-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d pescadores']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pescadores-db:

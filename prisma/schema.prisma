@@ -1,0 +1,635 @@
+// Club de Pescadores San Rafael — esquema de datos.
+//
+// Decisión de fondo: IDENTIDAD y FICHA DE SOCIO van separadas (Persona / Socio).
+// Una misma persona puede ser socio y ejercer un cargo —el Secretario del club es el
+// socio 12338— mientras que un empleado o un concesionario no puede ser socio en
+// absoluto (art. 22 del estatuto). Con una sola tabla eso no se puede expresar.
+//
+// Todo lo que pertenece a un predio lleva `predioId`: es el límite de alcance de los
+// roles acotados (Jefe de predio, Portero, Control de paso, Maestranza).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum Rol {
+  ADMIN_GENERAL
+  SECRETARIO
+  TESORERO
+  COBRADOR
+  JEFE_PREDIO
+  PORTERO
+  CONTROL_PASO
+  MAESTRANZA
+  PROFESOR
+  CONCESIONARIO
+  MEDICO
+  SOCIO
+}
+
+/// Las seis categorías del art. 11 del estatuto.
+enum CategoriaSocio {
+  ACTIVO
+  CADETE
+  VITALICIO
+  TRANSEUNTE
+  HONORARIO
+  PRESIDENTE_HONORARIO
+}
+
+/// LICENCIA (art. 25): no paga cuota, pero para usar las instalaciones se lo trata
+/// como NO SOCIO. EMPLAZADO (art. 28): tres cuotas impagas, diez días para regularizar.
+enum EstadoSocio {
+  AL_DIA
+  MOROSO
+  EMPLAZADO
+  CESANTE
+  SUSPENDIDO
+  LICENCIA
+  EXPULSADO
+}
+
+/// PORTERIA cobra y habilita. CONTROL sólo verifica aptitud y abre; nunca ve dinero.
+enum TipoAcceso {
+  PORTERIA
+  CONTROL
+}
+
+enum TipoAlojamiento {
+  BUNGALOW
+  CABANA
+  PARCELA
+  CARPA
+  CASILLA
+  VIVIENDA
+}
+
+enum TipoEspacio {
+  CANCHA
+  QUINCHO
+}
+
+/// Alojamiento se reserva por NOCHE; canchas por HORA; quinchos por BLOQUE
+/// (5 horas más hora adicional, según el tarifario del club).
+enum UnidadReserva {
+  NOCHE
+  HORA
+  BLOQUE
+}
+
+enum ModoReserva {
+  ANTICIPADA
+  EN_EL_MOMENTO
+  AMBAS
+}
+
+enum EstadoReserva {
+  ACTIVA
+  CONFIRMADA
+  CANCELADA
+  AUSENTE
+}
+
+enum MedioPago {
+  EFECTIVO
+  DEBITO
+  CREDITO
+  TRANSFERENCIA
+  MERCADO_PAGO
+  DEBITO_AUTOMATICO
+}
+
+/// Las condiciones que discrimina el tarifario del club.
+enum CondicionPersona {
+  SOCIO
+  NO_SOCIO
+  JUBILADO
+  DISCAPACIDAD
+  MENOR_5
+  ACOMPANANTE
+  INVITADO
+}
+
+enum ResultadoIngreso {
+  PERMITIDO
+  RECHAZADO
+}
+
+enum EstadoCaja {
+  ABIERTA
+  CERRADA
+}
+
+enum EstadoCuota {
+  PENDIENTE
+  PAGADA
+  VENCIDA
+  CONDONADA
+}
+
+/// Los aptos y derechos que condicionan el paso, todos con vigencia.
+enum TipoHabilitacion {
+  APTO_MEDICO
+  DERECHO_PILETA
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Identidad
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Persona {
+  id             String   @id @default(cuid())
+  dni            String   @unique
+  nombre         String
+  email          String?
+  telefono       String?
+  fechaNacimiento DateTime?
+
+  // Credenciales. `usuario` se guarda en minúsculas: es la clave de búsqueda del login.
+  usuario        String?  @unique
+  passwordHash   String?
+  activo         Boolean  @default(true)
+
+  // Marca de enrolamiento de huella. El template biométrico NUNCA se guarda acá:
+  // vive cifrado en la PC del predio (mismo criterio que netgym).
+  huellaEnrolada Boolean  @default(false)
+  huellaDedo     String?
+
+  roles          RolAsignado[]
+  socio          Socio?
+
+  cajas          Caja[]
+  cobrosTomados  Cobro[]          @relation("CobroOperador")
+  fichajes       Fichaje[]
+  aptosEmitidos  Habilitacion[]   @relation("HabilitacionEmisor")
+  carteraDe      Socio[]          @relation("SocioCobrador")
+
+  creadoEn       DateTime @default(now())
+  actualizadoEn  DateTime @updatedAt
+
+  @@index([usuario])
+  @@index([nombre])
+}
+
+/// Un rol por fila. Los roles acotados llevan `predioId`; los de gobierno lo dejan nulo.
+/// Una persona puede acumular roles (el Tesorero también es socio, por ejemplo).
+model RolAsignado {
+  id        String   @id @default(cuid())
+  personaId String
+  persona   Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  rol       Rol
+  predioId  String?
+  predio    Predio?  @relation(fields: [predioId], references: [id])
+
+  designadoPorId String?
+  creadoEn  DateTime @default(now())
+
+  @@unique([personaId, rol, predioId])
+  @@index([rol])
+}
+
+model GrupoFamiliar {
+  id        String   @id @default(cuid())
+  nombre    String
+  integrantes Socio[]
+  creadoEn  DateTime @default(now())
+}
+
+model Socio {
+  id            String         @id @default(cuid())
+  numeroSocio   Int            @unique
+  personaId     String         @unique
+  persona       Persona        @relation(fields: [personaId], references: [id])
+
+  categoria     CategoriaSocio @default(ACTIVO)
+  estado        EstadoSocio    @default(AL_DIA)
+  fechaIngreso  DateTime
+  /// Sólo para TRANSEUNTE: el permiso caduca solo y con él los beneficios (art. 14 e).
+  permisoHasta  DateTime?
+
+  grupoFamiliarId String?
+  grupoFamiliar   GrupoFamiliar? @relation(fields: [grupoFamiliarId], references: [id])
+  esTitular       Boolean        @default(false)
+
+  /// Cobrador asignado, cuando el socio está en una cartera de cobranza a domicilio.
+  cobradorId    String?
+  cobrador      Persona?       @relation("SocioCobrador", fields: [cobradorId], references: [id])
+
+  observaciones String?
+
+  cuotas        Cuota[]
+  habilitaciones Habilitacion[]
+  reservas      Reserva[]
+  invitados     Invitado[]
+  lotes         Lote[]
+  cobros        Cobro[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([estado])
+  @@index([categoria])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Estructura del club
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Los predios son ABM: se pueden agregar y quitar sin tocar código.
+model Predio {
+  id            String   @id @default(cuid())
+  nombre        String
+  slug          String   @unique
+  direccion     String?
+  /// Los predios remotos van por Starlink: el nodo local es obligatorio ahí.
+  conexionSatelital Boolean @default(false)
+  activo        Boolean  @default(true)
+  orden         Int      @default(0)
+
+  accesos       Acceso[]
+  alojamientos  Alojamiento[]
+  espacios      Espacio[]
+  roles         RolAsignado[]
+  actividades   ActividadPredio[]
+  tarifas       ItemTarifario[]
+  ingresos      Ingreso[]
+  cobros        Cobro[]
+  cajas         Caja[]
+  egresos       Egreso[]
+  fichajes      Fichaje[]
+  lotes         Lote[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+}
+
+/// Portería o punto de control. La tabla es una sola porque identificar, decidir,
+/// abrir y registrar es idéntico; lo que cambia es el panel de cada rol.
+model Acceso {
+  id        String     @id @default(cuid())
+  predioId  String
+  predio    Predio     @relation(fields: [predioId], references: [id], onDelete: Cascade)
+  nombre    String
+  tipo      TipoAcceso
+
+  /// Con Starlink la orden tiene que salir por la RED LOCAL, nunca por la nube de
+  /// eWeLink: con la PC y el interruptor detrás del mismo enlace, una orden por la
+  /// nube sube y baja por satélite dos veces (1 a 3 s para abrir una barrera).
+  dispositivoTipo String?   // "relay_usb" | "sonoff_lan" | "sonoff_cloud"
+  dispositivoRef  String?   // puerto serie, IP local o device id según el tipo
+  activo    Boolean    @default(true)
+
+  ingresos  Ingreso[]
+  cobros    Cobro[]
+  cajas     Caja[]
+
+  creadoEn  DateTime   @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([predioId, tipo])
+}
+
+/// Se reserva por NOCHE. Bungalows, cabañas, parcelas, carpas, casillas.
+model Alojamiento {
+  id            String          @id @default(cuid())
+  predioId      String
+  predio        Predio          @relation(fields: [predioId], references: [id], onDelete: Cascade)
+  nombre        String
+  tipo          TipoAlojamiento
+  capacidadBase Int             @default(4)
+  capacidadMax  Int             @default(6)
+  modoReserva   ModoReserva     @default(ANTICIPADA)
+  activo        Boolean         @default(true)
+
+  reservas      Reserva[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([predioId, tipo])
+}
+
+/// Se reserva por HORA (canchas) o por BLOQUE (quinchos: 5 h más hora adicional).
+/// `altaDemanda` activa cupo, ventana de anticipación y límite por socio.
+model Espacio {
+  id            String        @id @default(cuid())
+  predioId      String
+  predio        Predio        @relation(fields: [predioId], references: [id], onDelete: Cascade)
+  nombre        String
+  tipo          TipoEspacio
+  unidad        UnidadReserva @default(HORA)
+  /// Duración del bloque en horas cuando `unidad` es BLOQUE.
+  bloqueHoras   Int?
+  altaDemanda   Boolean       @default(false)
+  /// Horas mínimas de anticipación para cancelar sin perder lo pagado.
+  ventanaCancelacionHoras Int @default(12)
+  activo        Boolean       @default(true)
+
+  reservas      Reserva[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([predioId, tipo])
+}
+
+/// Fútbol, hockey, tenis, gimnasio, natación… Una actividad puede dictarse en más
+/// de un predio (la colonia y la guardería de verano se dan en los dos de la ciudad).
+model Actividad {
+  id            String   @id @default(cuid())
+  nombre        String
+  /// "mensual" o "turno", según cómo se cobra en el tarifario.
+  modalidad     String   @default("mensual")
+  activo        Boolean  @default(true)
+
+  predios       ActividadPredio[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+}
+
+model ActividadPredio {
+  actividadId String
+  actividad   Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  predioId    String
+  predio      Predio    @relation(fields: [predioId], references: [id], onDelete: Cascade)
+
+  @@id([actividadId, predioId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Acceso
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Apto médico y derecho de pileta de temporada: las dos cosas que habilitan el paso
+/// y las dos con vencimiento. El apto lo emite un médico; el derecho, una compra.
+model Habilitacion {
+  id          String           @id @default(cuid())
+  socioId     String
+  socio       Socio            @relation(fields: [socioId], references: [id], onDelete: Cascade)
+  tipo        TipoHabilitacion
+
+  autorizado  Boolean          @default(true)
+  desde       DateTime
+  hasta       DateTime
+  novedades   String?
+
+  /// Quién lo emitió. En el apto médico es el médico que revisó.
+  emisorId    String?
+  emisor      Persona?         @relation("HabilitacionEmisor", fields: [emisorId], references: [id])
+
+  creadoEn    DateTime @default(now())
+
+  @@index([socioId, tipo, hasta])
+}
+
+/// Log de cada paso por una portería o un punto de control, incluidos los rechazos:
+/// saber quién llegó sin apto o con la cuota vencida es justamente el dato que sirve.
+model Ingreso {
+  id          String           @id @default(cuid())
+  accesoId    String
+  acceso      Acceso           @relation(fields: [accesoId], references: [id])
+  predioId    String
+  predio      Predio           @relation(fields: [predioId], references: [id])
+
+  personaId   String?
+  /// Nombre de quien ingresó, congelado: sirve para los no socios sin ficha.
+  nombre      String
+  condicion   CondicionPersona @default(SOCIO)
+
+  resultado   ResultadoIngreso
+  motivo      String?
+  cobroId     String?          @unique
+  cobro       Cobro?           @relation(fields: [cobroId], references: [id])
+
+  /// Momento en el equipo de la portería y momento en que llegó al servidor. Con el
+  /// nodo trabajando sin enlace pueden diferir; el desvío importa para el arqueo.
+  ocurridoEn  DateTime
+  registradoEn DateTime        @default(now())
+
+  @@index([predioId, ocurridoEn])
+  @@index([personaId])
+}
+
+/// Acompañantes e invitados que el socio declara. Él responde por ellos (art. 26).
+model Invitado {
+  id        String   @id @default(cuid())
+  socioId   String
+  socio     Socio    @relation(fields: [socioId], references: [id], onDelete: Cascade)
+  nombre    String
+  dni       String?
+  creadoEn  DateTime @default(now())
+
+  @@index([socioId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Barrio de viviendas de fin de semana (El Nihuil)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Parcelas que el club cede en concesión precaria para que el socio construya su
+/// casa de fin de semana (art. 1 del reglamento). NO se reservan: se adjudican.
+model Lote {
+  id             String   @id @default(cuid())
+  predioId       String
+  predio         Predio   @relation(fields: [predioId], references: [id])
+  numero         String
+  fila           String?
+  adjudicatarioId String?
+  adjudicatario  Socio?   @relation(fields: [adjudicatarioId], references: [id])
+  fechaAdjudicacion DateTime?
+
+  autorizaciones AutorizacionEstadia[]
+
+  creadoEn       DateTime @default(now())
+  actualizadoEn  DateTime @updatedAt
+
+  @@unique([predioId, numero])
+}
+
+/// Permiso para que terceros usen la vivienda: hasta 15 días, con los nombres
+/// declarados. Sin esto la portería NO los deja pasar (arts. 9 y 10 del reglamento).
+model AutorizacionEstadia {
+  id        String   @id @default(cuid())
+  loteId    String
+  lote      Lote     @relation(fields: [loteId], references: [id], onDelete: Cascade)
+  personas  String[]
+  desde     DateTime
+  hasta     DateTime
+  aprobada  Boolean  @default(false)
+  creadoEn  DateTime @default(now())
+
+  @@index([loteId, hasta])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reservas
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Reserva {
+  id            String        @id @default(cuid())
+  socioId       String
+  socio         Socio         @relation(fields: [socioId], references: [id])
+
+  alojamientoId String?
+  alojamiento   Alojamiento?  @relation(fields: [alojamientoId], references: [id])
+  espacioId     String?
+  espacio       Espacio?      @relation(fields: [espacioId], references: [id])
+
+  desde         DateTime
+  hasta         DateTime
+  personas      Int           @default(1)
+  estado        EstadoReserva @default(ACTIVA)
+  /// El Jefe de predio puede reservar por encima de la disponibilidad pública.
+  prioritaria   Boolean       @default(false)
+  observaciones String?
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([desde, hasta])
+  @@index([socioId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dinero
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Precio de un concepto, cruzado por predio, condición de la persona y vigencia.
+/// `predioId` nulo significa que vale para todos (el derecho de pileta de temporada
+/// vale para los dos predios de la ciudad, por ejemplo).
+model ItemTarifario {
+  id          String           @id @default(cuid())
+  concepto    String
+  predioId    String?
+  predio      Predio?          @relation(fields: [predioId], references: [id])
+  condicion   CondicionPersona @default(SOCIO)
+  precio      Decimal          @db.Decimal(12, 2)
+  vigenciaDesde DateTime
+  vigenciaHasta DateTime?
+
+  creadoEn    DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([concepto, condicion, vigenciaDesde])
+}
+
+model Cuota {
+  id          String      @id @default(cuid())
+  socioId     String
+  socio       Socio       @relation(fields: [socioId], references: [id], onDelete: Cascade)
+  /// Formato "AAAA-MM".
+  periodo     String
+  monto       Decimal     @db.Decimal(12, 2)
+  estado      EstadoCuota @default(PENDIENTE)
+  vencimiento DateTime
+
+  creadoEn    DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@unique([socioId, periodo])
+  @@index([estado])
+}
+
+/// Turno de caja de un portero, o rendición de un cobrador. El arqueo discrimina
+/// por medio de pago, y marca aparte lo cobrado sin enlace.
+model Caja {
+  id          String     @id @default(cuid())
+  personaId   String
+  persona     Persona    @relation(fields: [personaId], references: [id])
+  predioId    String
+  predio      Predio     @relation(fields: [predioId], references: [id])
+  accesoId    String?
+  acceso      Acceso?    @relation(fields: [accesoId], references: [id])
+
+  estado      EstadoCaja @default(ABIERTA)
+  abiertaEn   DateTime   @default(now())
+  cerradaEn   DateTime?
+  /// Totales declarados por quien cierra, para contrastar con lo registrado.
+  arqueo      Json?
+
+  cobros      Cobro[]
+
+  @@index([predioId, estado])
+}
+
+model Cobro {
+  id          String    @id @default(cuid())
+
+  /// Clave de idempotencia generada en el origen. Es lo que impide que un reintento
+  /// sobre un enlace inestable cobre dos veces.
+  claveUnica  String    @unique
+
+  socioId     String?
+  socio       Socio?    @relation(fields: [socioId], references: [id])
+  /// Nombre congelado: la mayoría de los cobros de portería son a no socios.
+  pagador     String
+
+  predioId    String
+  predio      Predio    @relation(fields: [predioId], references: [id])
+  accesoId    String?
+  acceso      Acceso?   @relation(fields: [accesoId], references: [id])
+  cajaId      String?
+  caja        Caja?     @relation(fields: [cajaId], references: [id])
+
+  operadorId  String
+  operador    Persona   @relation("CobroOperador", fields: [operadorId], references: [id])
+
+  medioPago   MedioPago
+  total       Decimal   @db.Decimal(12, 2)
+  /// Detalle: concepto, cantidad y precio unitario de cada línea.
+  items       Json
+
+  /// Cobrado con el nodo trabajando sin enlace. El Tesorero los ve diferenciados.
+  offline     Boolean   @default(false)
+  /// Datos fiscales para emitir el comprobante ARCA más adelante, sin rehacer nada.
+  comprobante Json?
+
+  ingreso     Ingreso?
+
+  ocurridoEn  DateTime
+  registradoEn DateTime @default(now())
+
+  @@index([predioId, ocurridoEn])
+  @@index([socioId])
+}
+
+/// Planilla simple de egresos, que es lo único que se pidió por ahora.
+model Egreso {
+  id          String   @id @default(cuid())
+  predioId    String?
+  predio      Predio?  @relation(fields: [predioId], references: [id])
+  fecha       DateTime
+  concepto    String
+  monto       Decimal  @db.Decimal(12, 2)
+  comprobante String?
+  creadoEn    DateTime @default(now())
+
+  @@index([fecha])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Personal
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Control horario que consulta el Jefe de predio sobre su gente.
+model Fichaje {
+  id        String   @id @default(cuid())
+  personaId String
+  persona   Persona  @relation(fields: [personaId], references: [id])
+  predioId  String
+  predio    Predio   @relation(fields: [predioId], references: [id])
+  entrada   DateTime
+  salida    DateTime?
+
+  @@index([predioId, entrada])
+}

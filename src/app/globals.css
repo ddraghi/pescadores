@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Paleta del Club de Pescadores San Rafael.
+ * Los tres colores salen del logotipo original, muestreados del PNG:
+ *   rojo #ED3237 · negro #000000 · blanco #FFFFFF
+ *
+ * Reparto: fondos en blanco y negro, el rojo para marca y títulos. El rojo sobre
+ * blanco da 3,9:1 — alcanza para títulos y números grandes, NO para texto chico:
+ * para eso está --accent-text, que es el mismo rojo oscurecido hasta 7:1.
+ *
+ * El color de ACCIÓN (botones, ítem activo) es el negro en tema claro y el blanco
+ * en tema oscuro, no el rojo. Así el rojo conserva su peso donde importa.
+ */
+
+@layer base {
+  :root {
+    color-scheme: light;
+
+    --background: 20 14% 98%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 10% 95%;
+    --secondary-foreground: 0 0% 20%;
+    --muted: 20 10% 95%;
+    --muted-foreground: 20 5% 42%;
+
+    /* Rojo del club — marca, títulos, elementos destacados. */
+    --accent: 358 84% 56%;
+    --accent-foreground: 0 0% 100%;
+    /* Mismo rojo, legible como texto sobre fondo claro. */
+    --accent-text: 358 82% 42%;
+
+    --destructive: 358 84% 56%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 20 8% 89%;
+    --input: 20 8% 86%;
+    --ring: 358 84% 56%;
+    --radius: 0.5rem;
+
+    /* ── Semáforo de acceso (señalética a pantalla completa) ───────────
+       La fuente de cada uno es la que mejor contrasta:
+       blanco sobre rojo 4,9:1 · negro sobre amarillo 13:1 · negro sobre verde 6,2:1 */
+    --paso-ok: 141 68% 37%;
+    --paso-ok-foreground: 0 0% 0%;
+    --paso-alerta: 47 92% 53%;
+    --paso-alerta-foreground: 0 0% 0%;
+    --paso-no: 358 84% 56%;
+    --paso-no-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    --background: 0 0% 4%;
+    --foreground: 20 8% 92%;
+    --card: 0 0% 8%;
+    --card-foreground: 20 8% 92%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 20 8% 92%;
+
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 20 8% 92%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 20 5% 63%;
+
+    --accent: 358 84% 56%;
+    --accent-foreground: 0 0% 100%;
+    /* Sobre negro el rojo rinde mejor: se puede usar más claro y suelto. */
+    --accent-text: 358 90% 68%;
+
+    --destructive: 358 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 17%;
+    --input: 0 0% 20%;
+    --ring: 358 84% 56%;
+
+    --paso-ok: 141 62% 42%;
+    --paso-ok-foreground: 0 0% 0%;
+    --paso-alerta: 47 92% 55%;
+    --paso-alerta-foreground: 0 0% 0%;
+    --paso-no: 358 84% 56%;
+    --paso-no-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headline), system-ui, sans-serif;
+    text-wrap: balance;
+  }
+}
+
+/* Texto en rojo legible: usar SIEMPRE esta clase para el rojo tipográfico,
+   nunca `text-accent`, que a tamaño de cuerpo no llega al contraste mínimo. */
+.text-marca {
+  color: hsl(var(--accent-text));
+}
+
+/* ── Carteles de acceso ───────────────────────────────────────────────
+   Ocupan la pantalla completa en la portería y en los puntos de control.
+   Se leen a varios metros, así que el tamaño es deliberadamente enorme. */
+.cartel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40vh;
+  padding: 2rem;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-size: clamp(2.5rem, 9vw, 6rem);
+}
+.cartel-ok {
+  background: hsl(var(--paso-ok));
+  color: hsl(var(--paso-ok-foreground));
+}
+.cartel-alerta {
+  background: hsl(var(--paso-alerta));
+  color: hsl(var(--paso-alerta-foreground));
+}
+.cartel-no {
+  background: hsl(var(--paso-no));
+  color: hsl(var(--paso-no-foreground));
+}
+.cartel .detalle {
+  font-size: clamp(1rem, 2.5vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
