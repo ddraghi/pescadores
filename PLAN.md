@@ -156,14 +156,37 @@ probar de punta a punta en modo simulado.
 
 ---
 
-## Etapa 7 — Socios y reservas
-**~2-3 sesiones**
+## Etapa 7 — Socios y reservas ✅
+**~1 sesión · HECHA**
 
-Aplicación del socio como PWA: credencial QR que anda sin señal, cuota e historial,
-pago por Mercado Pago, reservas de canchas, quinchos y alojamiento. Panel del Jefe de
-predio con calendario, disponibilidad y reservas prioritarias.
+El panel del socio se entra **por el predio**, que es como piensa el socio: no dice
+«quiero reservar un alojamiento», dice «me voy al Nihuil el finde».
 
-**Queda funcionando:** los socios usan la aplicación desde el celular.
+- **Pantalla principal con una tarjeta por predio**, con su foto, y un resumen arriba de
+  lo que conviene saber antes de salir de casa: deuda, apto médico, próxima reserva
+- **Adentro de cada predio**, sólo lo que ese predio tiene. Sale de lo que cargó el
+  Secretario, sin programar una pantalla por predio
+- **Menú lateral con lo del club**: grupo familiar, cuota, actividades, reservas,
+  credencial, apto médico y avisos
+- **Actividades en los dos lugares**, como se pidió: el resumen del club en el lateral y
+  las de cada predio adentro
+- **Credencial con QR** que se renderiza en el servidor y viaja en el HTML: se ve aunque
+  el celular no tenga señal, que es lo que pasa en el Nihuil
+- **Reservas** de alojamiento por noche y de canchas y quinchos por hora, con control de
+  cruces al confirmar y ventana de cancelación
+- **Jefe de predio**: grilla de disponibilidad a tres semanas, listado de reservas y
+  reserva prioritaria para eventos del club
+- **Administrador**: ocupación de los cinco predios
+- **Portería**: entradas, salidas y alojados del día
+- Instalable en el celular desde el navegador
+
+### Lo que quedó afuera
+
+- **Pago por Mercado Pago desde el panel del socio**: necesita la cuenta del club
+  conectada y una URL pública para el webhook
+- **Funcionamiento sin conexión** más allá de la credencial: hace falta un service
+  worker, y conviene hacerlo cuando el resto esté estable
+- **Barrio de viviendas** desde el lado del socio (autorizaciones de estadía)
 
 ---
 

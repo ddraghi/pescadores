@@ -13,7 +13,10 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
 
-**Etapas 0 a 6 hechas** (la 6, en su mitad de plataforma). Siguiente: etapa 7, el socio.
+**Etapas 0 a 7 hechas** (la 6, en su mitad de plataforma). Siguiente: etapa 8.
+
+El panel del socio se entra **por el predio**: pantalla principal con una tarjeta por
+predio, menú lateral con lo del club. Las actividades están en los dos lugares.
 
 ⚠️ **El nodo del predio no está escrito.** Es lo que falta de la etapa 6 y necesita
 hardware sobre la mesa. Mientras tanto, `SIMULAR_DISPOSITIVOS=true` hace que las órdenes

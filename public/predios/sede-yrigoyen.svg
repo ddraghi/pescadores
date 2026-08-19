@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="Sede del club">
+  <rect width="400" height="260" fill="#111"/>
+  <g stroke="#ED3237" stroke-width="6" fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M80 130 L200 55 L320 130"/>
+    <path d="M110 122 V205 H290 V122"/>
+    <path d="M175 205 V155 H225 V205"/>
+  </g>
+  <text x="200" y="240" fill="#777" font-family="system-ui, sans-serif" font-size="15" text-anchor="middle">Foto pendiente</text>
+</svg>

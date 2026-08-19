@@ -119,15 +119,16 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Mi panel',         href: '/socio',              icono: Home,        etapa: 1 },
     { etiqueta: 'Mi grupo familiar', href: '/socio/familia',     icono: Users,       etapa: 7 },
     { etiqueta: 'Mi cuota',         href: '/socio/cuota',        icono: CreditCard,  etapa: 7 },
+    { etiqueta: 'Mis actividades',  href: '/socio/actividades',  icono: ClipboardList, etapa: 7 },
     { etiqueta: 'Mis reservas',     href: '/socio/reservas',     icono: CalendarDays, etapa: 7 },
     { etiqueta: 'Mi credencial',    href: '/socio/credencial',   icono: ScanLine,    etapa: 7 },
     { etiqueta: 'Mi apto médico',   href: '/socio/apto',         icono: Stethoscope, etapa: 7 },
-    { etiqueta: 'Notificaciones',   href: '/socio/avisos',       icono: Bell,        etapa: 7 },
+    { etiqueta: 'Avisos',           href: '/socio/avisos',       icono: Bell,        etapa: 7 },
   ],
 };
 
 /** Etapa del plan ya construida. Subir este número enciende los ítems de esa etapa. */
-export const ETAPA_ACTUAL = 6;
+export const ETAPA_ACTUAL = 7;
 
 export function disponible(item: ItemMenu): boolean {
   return item.etapa <= ETAPA_ACTUAL;

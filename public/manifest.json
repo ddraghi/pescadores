@@ -1,0 +1,18 @@
+{
+  "name": "Club de Pescadores San Rafael",
+  "short_name": "Club Pescadores",
+  "description": "Socios, predios y reservas del Club de Pescadores San Rafael.",
+  "start_url": "/socio",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ED3237",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "/logo-club.png",
+      "sizes": "874x168",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

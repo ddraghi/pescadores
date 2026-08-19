@@ -20,6 +20,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Club de Pescadores San Rafael',
+  // Con esto el socio puede agregarla a la pantalla de inicio del celular.
+  manifest: '/manifest.json',
+  appleWebApp: { capable: true, title: 'Club Pescadores', statusBarStyle: 'black-translucent' },
   description: 'Gestión de socios, predios y accesos del Club de Pescadores San Rafael.',
 };
 
