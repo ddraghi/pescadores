@@ -100,14 +100,27 @@ precio cargado, no se le genera cuota — así es como los vitalicios quedan afu
 
 ---
 
-## Etapa 5 — La puerta · Portero, Control de paso y Médico
-**~2 sesiones**
+## Etapa 5 — La puerta · Portero, Control de paso y Médico ✅
+**~1 sesión · HECHA**
 
-La función única de decisión de acceso, la pantalla de portería con cobro, la pantalla
-de punto de control, y la cola y los aptos del médico.
+- **Una sola función decide los ingresos** (`src/lib/acceso.ts`), probada regla por
+  regla contra el estatuto. La consultan la portería y los puntos de control, y mañana
+  la huella y el QR
+- **Pantalla de puesto** compartida, pensada para pantalla táctil con cola de gente
+  atrás: buscar, ver el cartel a media pantalla, cobrar y abrir
+- **El punto de control no ve plata en ninguna parte**: es la misma pantalla con el
+  cobro apagado
+- **Mostrador de portería** para los conceptos sueltos del tarifario — quinchos, bajada
+  de lancha, derecho de pileta, revisación
+- **Enfermería**: cola de espera, emisión de aptos con vigencia, historial y vencimientos
+- **Registros de ingreso** para el punto de control y para el Jefe de predio
 
-**Queda funcionando:** la cadena completa — se cobra la revisación, el médico autoriza,
-el control de la pileta lee y abre.
+**Queda funcionando la cadena completa:** la portería cobra la revisación → el socio
+aparece en la cola del médico → el médico emite el apto → el control de la pileta lo
+verifica y abre.
+
+Todos los intentos se registran, también los rechazos: saber quién llegó sin apto o con
+el permiso vencido es justamente el dato que el club necesita.
 
 ---
 

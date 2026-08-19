@@ -13,11 +13,32 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
 
-**Etapas 0 a 4 hechas.** Siguiente: etapa 5, la puerta.
+**Etapas 0 a 5 hechas.** Siguiente: etapa 6, dispositivos y croquis.
 
-⚠️ Antes de armar las pantallas del **Jefe de predio** y del **Socio**, el cliente tiene
-pedidos especiales que todavía no pasó. La etapa 5 incluye dos: `/predio/ingresos` y
-`/socio/apto`. Preguntarle antes de construirlas.
+### Lo que el cliente ya definió para las etapas 6 y 7
+
+**Dispositivos (etapa 6).** Interruptores Sonoff de **un solo canal**, cada uno con su
+ID. Se registran con su ubicación y su para-qué (acceso, iluminación, bomba, riego,
+otro), que además sirve de filtro para que no se mezclen las vistas. Croquis: **3 o 4
+por predio**, con los dispositivos ubicados encima como luces testigo que se tocan para
+cambiar de estado. Operan **jefe de predio, maestranza y portero**, y queda registro de
+quién accionó qué.
+
+**El testigo tiene TRES estados**, no dos: encendido, apagado y **sin dato**. Con bombas
+y riego, mostrar un estado viejo es peor que no mostrar nada.
+
+**Los horarios los ejecuta la PC de la portería**, que está encendida las 24 h. El
+servidor sólo los define y se los baja; nunca dispara él. Así el riego no depende del
+enlace. Las órdenes son absolutas («poné en encendido»), nunca «invertí»: si una se
+duplica, no pasa nada.
+
+**Unificar** los dispositivos del molinete (hoy en `Acceso.dispositivoTipo/Ref`) con este
+registro nuevo.
+
+**Panel del socio (etapa 7).** Menú lateral con lo del club; pantalla principal con una
+tarjeta por predio; adentro de cada predio, sus reservas y funciones. Las actividades
+van en los **dos** lugares: el resumen en el lateral y las de cada predio adentro. Falta
+la foto de la Sede H. Yrigoyen — poner una casita genérica por ahora.
 
 ```bash
 npm run probar          # corre todas las pruebas (no necesitan base)

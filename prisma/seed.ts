@@ -8,7 +8,9 @@
  *   npm run db:seed
  */
 
-import { PrismaClient, Rol, TipoAcceso, TipoAlojamiento, TipoEspacio, UnidadReserva } from '@prisma/client';
+import {
+  PrismaClient, Rol, TipoAcceso, TipoAlojamiento, TipoEspacio, TipoHabilitacion, UnidadReserva,
+} from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -42,12 +44,15 @@ async function main() {
   // ── Accesos ────────────────────────────────────────────────────────────────
   // Portería general en cada predio, más los puntos de control de las zonas que el
   // tarifario cobra aparte: pileta, gimnasio y bajada de lanchas.
-  const accesos: { predio: string; nombre: string; tipo: TipoAcceso; dispositivoTipo: string }[] = [
+  const accesos: {
+    predio: string; nombre: string; tipo: TipoAcceso; dispositivoTipo: string;
+    exigeAptoMedico?: boolean; exigeDerecho?: TipoHabilitacion;
+  }[] = [
     { predio: 'sede-yrigoyen',        nombre: 'Portería principal',  tipo: TipoAcceso.PORTERIA, dispositivoTipo: 'relay_usb' },
-    { predio: 'sede-yrigoyen',        nombre: 'Control pileta',      tipo: TipoAcceso.CONTROL,  dispositivoTipo: 'sonoff_lan' },
+    { predio: 'sede-yrigoyen',        nombre: 'Control pileta',      tipo: TipoAcceso.CONTROL,  dispositivoTipo: 'sonoff_lan', exigeAptoMedico: true, exigeDerecho: TipoHabilitacion.DERECHO_PILETA },
     { predio: 'sede-yrigoyen',        nombre: 'Control gimnasio',    tipo: TipoAcceso.CONTROL,  dispositivoTipo: 'sonoff_lan' },
     { predio: 'campo-deportes',       nombre: 'Portería principal',  tipo: TipoAcceso.PORTERIA, dispositivoTipo: 'relay_usb' },
-    { predio: 'campo-deportes',       nombre: 'Control pileta',      tipo: TipoAcceso.CONTROL,  dispositivoTipo: 'sonoff_lan' },
+    { predio: 'campo-deportes',       nombre: 'Control pileta',      tipo: TipoAcceso.CONTROL,  dispositivoTipo: 'sonoff_lan', exigeAptoMedico: true, exigeDerecho: TipoHabilitacion.DERECHO_PILETA },
     { predio: 'nihuil',               nombre: 'Portería principal',  tipo: TipoAcceso.PORTERIA, dispositivoTipo: 'relay_usb' },
     { predio: 'camping-valle-grande', nombre: 'Portería principal',  tipo: TipoAcceso.PORTERIA, dispositivoTipo: 'relay_usb' },
     { predio: 'lago-valle-grande',    nombre: 'Portería principal',  tipo: TipoAcceso.PORTERIA, dispositivoTipo: 'relay_usb' },
@@ -59,7 +64,11 @@ async function main() {
     const existe = await prisma.acceso.findFirst({ where: { predioId, nombre: a.nombre } });
     if (!existe) {
       await prisma.acceso.create({
-        data: { predioId, nombre: a.nombre, tipo: a.tipo, dispositivoTipo: a.dispositivoTipo },
+        data: {
+          predioId, nombre: a.nombre, tipo: a.tipo, dispositivoTipo: a.dispositivoTipo,
+          exigeAptoMedico: a.exigeAptoMedico ?? false,
+          exigeDerecho: a.exigeDerecho ?? null,
+        },
       });
     }
   }

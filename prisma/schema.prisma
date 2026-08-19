@@ -315,6 +315,12 @@ model Acceso {
   dispositivoRef  String?   // puerto serie, IP local o device id según el tipo
   activo    Boolean    @default(true)
 
+  /// Qué exige este puesto para dejar pasar. La pileta pide apto médico; la bajada de
+  /// lanchas no. Se configura por acceso, en vez de estar cableado por nombre.
+  exigeAptoMedico Boolean @default(false)
+  /// Habilitación con vigencia que hace falta tener, si corresponde.
+  exigeDerecho    TipoHabilitacion?
+
   ingresos  Ingreso[]
   cobros    Cobro[]
   cajas     Caja[]

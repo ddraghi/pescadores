@@ -72,6 +72,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
   PORTERO: [
     { etiqueta: 'Panel',            href: '/porteria',             icono: Home,         etapa: 1 },
     { etiqueta: 'Ingreso',          href: '/porteria/ingreso',     icono: DoorOpen,     etapa: 5 },
+    { etiqueta: 'Cobrar',           href: '/porteria/cobrar',      icono: Wallet,       etapa: 5 },
     { etiqueta: 'Alojamiento',      href: '/porteria/alojamiento', icono: Building2,    etapa: 7 },
     { etiqueta: 'Mi caja',          href: '/porteria/caja',        icono: Landmark,     etapa: 4 },
     { etiqueta: 'Movimientos',      href: '/porteria/movimientos', icono: ClipboardList, etapa: 4 },
@@ -115,13 +116,13 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Mi cuota',         href: '/socio/cuota',        icono: CreditCard,  etapa: 7 },
     { etiqueta: 'Mis reservas',     href: '/socio/reservas',     icono: CalendarDays, etapa: 7 },
     { etiqueta: 'Mi credencial',    href: '/socio/credencial',   icono: ScanLine,    etapa: 7 },
-    { etiqueta: 'Mi apto médico',   href: '/socio/apto',         icono: Stethoscope, etapa: 5 },
+    { etiqueta: 'Mi apto médico',   href: '/socio/apto',         icono: Stethoscope, etapa: 7 },
     { etiqueta: 'Notificaciones',   href: '/socio/avisos',       icono: Bell,        etapa: 7 },
   ],
 };
 
 /** Etapa del plan ya construida. Subir este número enciende los ítems de esa etapa. */
-export const ETAPA_ACTUAL = 4;
+export const ETAPA_ACTUAL = 5;
 
 export function disponible(item: ItemMenu): boolean {
   return item.etapa <= ETAPA_ACTUAL;

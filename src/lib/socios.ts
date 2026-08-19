@@ -100,3 +100,11 @@ export const ANIOS_PARA_VITALICIO = 30;
 
 /** A los 18 el cadete deja de serlo (art. 14 inc. d). */
 export const EDAD_FIN_CADETE = 18;
+
+/**
+ * Días que dura la revisación médica.
+ *
+ * El tarifario del club la cobra cada quince días, así que ése es el plazo por defecto
+ * del apto. El médico puede poner otro en cada caso.
+ */
+export const DIAS_APTO_POR_DEFECTO = 15;
