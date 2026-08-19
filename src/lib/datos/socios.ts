@@ -1,0 +1,130 @@
+import 'server-only';
+import { Prisma, CategoriaSocio, EstadoSocio } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+
+export const POR_PAGINA = 25;
+
+export interface FiltrosPadron {
+  q?: string;
+  categoria?: string;
+  estado?: string;
+  pagina?: number;
+}
+
+export interface SocioEnLista {
+  id: string;
+  numeroSocio: number;
+  nombre: string;
+  dni: string;
+  categoria: string;
+  estado: string;
+  fechaIngreso: string;
+  fechaNacimiento: string | null;
+  permisoHasta: string | null;
+  email: string | null;
+  telefono: string | null;
+  usuario: string | null;
+  observaciones: string | null;
+  grupoFamiliarId: string | null;
+  grupoFamiliarNombre: string | null;
+  esTitular: boolean;
+  antiguedad: number;
+}
+
+function aISO(d: Date | null): string | null {
+  return d ? d.toISOString().slice(0, 10) : null;
+}
+
+/**
+ * Busca en el padrón con paginado. El padrón del club tiene miles de socios —los
+ * números de la comisión directiva llegan a 14.965—, así que nunca se traen todos.
+ */
+export async function buscarSocios(filtros: FiltrosPadron) {
+  const pagina = Math.max(1, filtros.pagina ?? 1);
+  const q = (filtros.q ?? '').trim();
+
+  const condiciones: Prisma.SocioWhereInput[] = [];
+
+  if (q) {
+    const soloDigitos = q.replace(/\D/g, '');
+    const alternativas: Prisma.SocioWhereInput[] = [
+      { persona: { nombre: { contains: q, mode: 'insensitive' } } },
+    ];
+    if (soloDigitos) {
+      alternativas.push({ persona: { dni: { startsWith: soloDigitos } } });
+      const nro = Number(soloDigitos);
+      if (Number.isSafeInteger(nro)) alternativas.push({ numeroSocio: nro });
+    }
+    condiciones.push({ OR: alternativas });
+  }
+
+  if (filtros.categoria && filtros.categoria in CategoriaSocio) {
+    condiciones.push({ categoria: filtros.categoria as CategoriaSocio });
+  }
+  if (filtros.estado && filtros.estado in EstadoSocio) {
+    condiciones.push({ estado: filtros.estado as EstadoSocio });
+  }
+
+  const where: Prisma.SocioWhereInput = condiciones.length ? { AND: condiciones } : {};
+
+  const [total, registros] = await Promise.all([
+    prisma.socio.count({ where }),
+    prisma.socio.findMany({
+      where,
+      orderBy: { numeroSocio: 'asc' },
+      skip: (pagina - 1) * POR_PAGINA,
+      take: POR_PAGINA,
+      include: {
+        persona: true,
+        grupoFamiliar: { select: { id: true, nombre: true } },
+      },
+    }),
+  ]);
+
+  const hoy = new Date();
+  const socios: SocioEnLista[] = registros.map((s) => ({
+    id: s.id,
+    numeroSocio: s.numeroSocio,
+    nombre: s.persona.nombre,
+    dni: s.persona.dni,
+    categoria: s.categoria,
+    estado: s.estado,
+    fechaIngreso: aISO(s.fechaIngreso)!,
+    fechaNacimiento: aISO(s.persona.fechaNacimiento),
+    permisoHasta: aISO(s.permisoHasta),
+    email: s.persona.email,
+    telefono: s.persona.telefono,
+    usuario: s.persona.usuario,
+    observaciones: s.observaciones,
+    grupoFamiliarId: s.grupoFamiliarId,
+    grupoFamiliarNombre: s.grupoFamiliar?.nombre ?? null,
+    esTitular: s.esTitular,
+    antiguedad: hoy.getFullYear() - s.fechaIngreso.getFullYear(),
+  }));
+
+  return {
+    socios,
+    total,
+    pagina,
+    paginas: Math.max(1, Math.ceil(total / POR_PAGINA)),
+  };
+}
+
+/** Los grupos familiares que ya existen, para poder sumar a alguien a uno. */
+export async function listarGruposFamiliares() {
+  const grupos = await prisma.grupoFamiliar.findMany({
+    orderBy: { nombre: 'asc' },
+    select: { id: true, nombre: true, _count: { select: { integrantes: true } } },
+  });
+  return grupos.map((g) => ({ id: g.id, nombre: g.nombre, integrantes: g._count.integrantes }));
+}
+
+/** Totales por estado, para el encabezado del padrón. */
+export async function resumenPadron() {
+  const porEstado = await prisma.socio.groupBy({ by: ['estado'], _count: true });
+  const total = porEstado.reduce((suma, e) => suma + e._count, 0);
+  return {
+    total,
+    porEstado: Object.fromEntries(porEstado.map((e) => [e.estado, e._count])) as Record<string, number>,
+  };
+}

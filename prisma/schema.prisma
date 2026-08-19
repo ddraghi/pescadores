@@ -232,12 +232,39 @@ model Socio {
   invitados     Invitado[]
   lotes         Lote[]
   cobros        Cobro[]
+  actos         ActoEstatutario[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
   @@index([estado])
   @@index([categoria])
+}
+
+/**
+ * Constancia de cada acto sobre un socio: licencia, emplazamiento, cesantía, reingreso,
+ * suspensión, expulsión, cambio de categoría.
+ *
+ * Va en su propia tabla y no en las observaciones del socio por dos motivos: las
+ * observaciones son notas libres que la Secretaría edita, y el historial se perdería en
+ * la primera edición; y porque el estatuto exige constancia de estos actos (art. 26 y
+ * siguientes), así que tienen que quedar con fecha y con quién los registró.
+ */
+model ActoEstatutario {
+  id        String   @id @default(cuid())
+  socioId   String
+  socio     Socio    @relation(fields: [socioId], references: [id], onDelete: Cascade)
+
+  /// 'ESTADO' o 'CATEGORIA'.
+  tipo      String
+  desde     String
+  hasta     String
+  motivo    String?
+
+  registradoPorId String?
+  creadoEn  DateTime @default(now())
+
+  @@index([socioId, creadoEn])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

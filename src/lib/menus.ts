@@ -119,7 +119,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
 };
 
 /** Etapa del plan ya construida. Subir este número enciende los ítems de esa etapa. */
-export const ETAPA_ACTUAL = 2;
+export const ETAPA_ACTUAL = 3;
 
 export function disponible(item: ItemMenu): boolean {
   return item.etapa <= ETAPA_ACTUAL;

@@ -13,7 +13,12 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
 
-**Etapas 0, 1 y 2 hechas.** Siguiente: etapa 3, padrón de socios.
+**Etapas 0 a 3 hechas.** Siguiente: etapa 4, el dinero (Tesorero) — la más grande.
+
+```bash
+npm run probar:csv      # prueba el lector del CSV del padrón, sin base
+npm run socios:prueba   # genera socios de prueba, con los casos del estatuto
+```
 
 Al terminar una etapa hay que subir `ETAPA_ACTUAL` en `src/lib/menus.ts`: eso enciende
 solos los ítems de menú de esa etapa.
@@ -89,6 +94,14 @@ Los documentos oficiales están en <https://pescadores.ar>. Lo que ya está inco
 - **Barrio de fin de semana del Nihuil**: prestar la vivienda a terceros exige permiso
   con nombres declarados y **máximo 15 días**; sin eso la portería no los deja pasar
   (arts. 9 y 10 del reglamento).
+
+Todo esto vive en `src/lib/socios.ts`, con el artículo al lado de cada regla. Las
+transiciones de estado permitidas están en `TRANSICIONES`: la que no se toca es que del
+**expulsado no se vuelve** (art. 29).
+
+Los actos —licencia, cesantía, cambio de categoría— van a la tabla `ActoEstatutario`,
+**nunca a las observaciones del socio**: las observaciones son notas libres que la
+Secretaría edita, y el historial se perdería en la primera edición.
 
 ---
 

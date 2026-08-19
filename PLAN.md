@@ -53,13 +53,25 @@ Nada se borra: se da de baja. Un predio tiene años de ingresos y cobros colgand
 
 ---
 
-## Etapa 3 — Padrón de socios · Secretario
-**~2 sesiones**
+## Etapa 3 — Padrón de socios · Secretario ✅
+**~1 sesión · HECHA**
 
-ABM de socios, seis categorías, grupos familiares, importador CSV, y el ciclo de vida
-estatutario: admisión, licencia, emplazamiento a las tres cuotas, cesantía, reingreso.
+- **Padrón** con búsqueda por nombre, DNI o número de socio, filtros por categoría y
+  estado, y paginado de a 25 (el padrón del club llega a los cinco dígitos)
+- **Seis categorías** del estatuto y **siete estados**, cada uno con su artículo a la vista
+- **Grupos familiares**: crear uno nuevo, sumarse a uno existente, marcar al titular
+- **Ciclo de vida** con las transiciones permitidas. Del expulsado no se vuelve (art. 29)
+- **Actos estatutarios** en su propia tabla, con fecha, motivo y quién los registró
+- **Detección automática** de lo que el estatuto obliga a resolver: cadetes que
+  cumplieron 18, activos con 30 años de antigüedad, permisos de transeúnte vencidos
+- **Importador CSV** tolerante con el archivo que salga del sistema actual, que informa
+  fila por fila qué entró y qué no
+- Consulta de sólo lectura para el Administrador
 
 **Queda funcionando:** el padrón real cargado y administrable.
+
+El acceso del socio a la plataforma es opcional: un cadete chico figura en el padrón
+pero no necesita usuario.
 
 ---
 
