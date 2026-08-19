@@ -9,7 +9,8 @@
  */
 
 import {
-  PrismaClient, Rol, TipoAcceso, TipoAlojamiento, TipoEspacio, TipoHabilitacion, UnidadReserva,
+  PrismaClient, PropositoDispositivo, Rol, TipoAcceso, TipoAlojamiento, TipoEspacio,
+  TipoHabilitacion, UnidadReserva,
 } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
@@ -17,6 +18,15 @@ const prisma = new PrismaClient();
 
 /** Contraseña única para todas las cuentas de prueba. Sólo desarrollo. */
 const CLAVE_DEMO = 'pescadores';
+
+/** Para armar identificadores provisorios legibles. */
+function aSlugSimple(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-');
+}
 
 async function main() {
   console.log('Sembrando…');
@@ -59,18 +69,35 @@ async function main() {
     { predio: 'lago-valle-grande',    nombre: 'Bajada de lanchas',   tipo: TipoAcceso.CONTROL,  dispositivoTipo: 'sonoff_lan' },
   ];
 
+  // Cada acceso lleva su interruptor, que vive en el registro único de dispositivos.
+  // El identificador real de eWeLink se carga cuando se vincula el aparato desde su
+  // aplicación; hasta entonces queda uno provisorio y visible.
   for (const a of accesos) {
     const predioId = porSlug[a.predio].id;
     const existe = await prisma.acceso.findFirst({ where: { predioId, nombre: a.nombre } });
-    if (!existe) {
-      await prisma.acceso.create({
-        data: {
-          predioId, nombre: a.nombre, tipo: a.tipo, dispositivoTipo: a.dispositivoTipo,
-          exigeAptoMedico: a.exigeAptoMedico ?? false,
-          exigeDerecho: a.exigeDerecho ?? null,
-        },
-      });
-    }
+    if (existe) continue;
+
+    const dispositivo = await prisma.dispositivo.create({
+      data: {
+        predioId,
+        nombre: a.nombre,
+        deviceId: `por-vincular-${a.predio}-${aSlugSimple(a.nombre)}`,
+        proposito: PropositoDispositivo.ACCESO,
+        via: a.dispositivoTipo,
+        ubicacion: a.nombre,
+      },
+    });
+
+    await prisma.acceso.create({
+      data: {
+        predioId,
+        nombre: a.nombre,
+        tipo: a.tipo,
+        dispositivoId: dispositivo.id,
+        exigeAptoMedico: a.exigeAptoMedico ?? false,
+        exigeDerecho: a.exigeDerecho ?? null,
+      },
+    });
   }
   console.log(`  ${accesos.length} accesos`);
 

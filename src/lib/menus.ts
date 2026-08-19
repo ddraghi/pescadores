@@ -67,6 +67,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Ingresos',         href: '/predio/ingresos',     icono: LogIn,       etapa: 5 },
     { etiqueta: 'Personal',         href: '/predio/personal',     icono: Users,       etapa: 8 },
     { etiqueta: 'Dispositivos',     href: '/predio/dispositivos', icono: Settings,    etapa: 6 },
+    { etiqueta: 'Croquis',          href: '/predio/croquis',      icono: MapPin,      etapa: 6 },
   ],
 
   PORTERO: [
@@ -76,6 +77,8 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Alojamiento',      href: '/porteria/alojamiento', icono: Building2,    etapa: 7 },
     { etiqueta: 'Mi caja',          href: '/porteria/caja',        icono: Landmark,     etapa: 4 },
     { etiqueta: 'Movimientos',      href: '/porteria/movimientos', icono: ClipboardList, etapa: 4 },
+    { etiqueta: 'Dispositivos',     href: '/porteria/dispositivos', icono: Settings,      etapa: 6 },
+    { etiqueta: 'Croquis',          href: '/porteria/croquis',      icono: MapPin,        etapa: 6 },
   ],
 
   CONTROL_PASO: [
@@ -86,6 +89,8 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
 
   MAESTRANZA: [
     { etiqueta: 'Panel',            href: '/maestranza',        icono: Home,       etapa: 1 },
+    { etiqueta: 'Dispositivos',     href: '/maestranza/dispositivos', icono: Settings,   etapa: 6 },
+    { etiqueta: 'Croquis',          href: '/maestranza/croquis',      icono: MapPin,     etapa: 6 },
     { etiqueta: 'Mis tareas',       href: '/maestranza/tareas', icono: ListChecks, etapa: 8 },
     { etiqueta: 'Fichaje',          href: '/maestranza/fichaje', icono: Wrench,    etapa: 8 },
   ],
@@ -122,7 +127,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
 };
 
 /** Etapa del plan ya construida. Subir este número enciende los ítems de esa etapa. */
-export const ETAPA_ACTUAL = 5;
+export const ETAPA_ACTUAL = 6;
 
 export function disponible(item: ItemMenu): boolean {
   return item.etapa <= ETAPA_ACTUAL;

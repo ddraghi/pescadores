@@ -124,13 +124,35 @@ el permiso vencido es justamente el dato que el club necesita.
 
 ---
 
-## Etapa 6 — Dispositivos y modo desconectado
-**~2 sesiones · requiere hardware a mano**
+## Etapa 6 — Dispositivos y croquis ✅ (la mitad de plataforma)
+**~1 sesión · HECHA lo que se puede hacer sin aparatos**
 
-Agente local del predio: lector de huella ZKTeco, relay USB y Sonoff **por red local**,
-caché de decisión y cola de escritura para operar sin depender del enlace.
+- **Registro único de dispositivos**: interruptores Sonoff de un canal, con su predio,
+  su identificador de eWeLink, para qué son y dónde están. Los accesos ahora apuntan
+  acá en vez de guardar su propia configuración
+- **Filtros por propósito** para que las vistas no se mezclen
+- **Testigo de tres estados**: encendido, apagado y **sin dato**. Si la última lectura
+  quedó vieja se pone gris y no se deja tocar — con una bomba, operar a ciegas es peor
+  que no operar
+- **Croquis por sector**, con los dispositivos ubicados encima en coordenadas
+  porcentuales, para que se vean igual en cualquier pantalla
+- **Horarios** de encendido y apagado por día de la semana
+- **Registro de quién accionó qué**, cuándo y desde dónde
+- Tres roles operan —jefe de predio, maestranza y portero— pero sólo el jefe configura
+- **Modo simulado** para poder ver todo funcionando sin un solo aparato conectado
 
-**Queda funcionando:** una portería real abre la barrera, con Starlink caído incluido.
+### Lo que falta de esta etapa: el nodo del predio
+
+El agente que corre en la PC de la portería **no está escrito**, porque sin un Sonoff y
+un lector sobre la mesa se escribiría a ciegas y habría que rehacerlo. Le toca:
+
+- Reportar el estado real de cada dispositivo (es lo que apaga el modo simulado)
+- Recibir las órdenes pendientes de `AccionDispositivo` y ejecutarlas por la red local
+- Guardar los horarios y **dispararlos él**, para que el riego no dependa del enlace
+- Lector de huella ZKTeco, caché de decisión de acceso y cola de cobros sin enlace
+
+**Queda funcionando:** toda la administración de dispositivos, y las pantallas se pueden
+probar de punta a punta en modo simulado.
 
 ---
 

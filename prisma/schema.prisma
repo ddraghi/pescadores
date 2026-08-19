@@ -136,6 +136,24 @@ enum EstadoCuota {
   CONDONADA
 }
 
+/// Para qué es cada interruptor. Además de describirlo, filtra las vistas: la pantalla
+/// de accesos del Secretario no se llena con las luces del quincho.
+enum PropositoDispositivo {
+  ACCESO
+  ILUMINACION
+  BOMBA
+  RIEGO
+  OTRO
+}
+
+/// SIN_DATO no es un detalle: con bombas y riego, mostrar un estado viejo es peor que no
+/// mostrar nada. El testigo se pone gris y no se deja tocar.
+enum EstadoDispositivo {
+  ENCENDIDO
+  APAGADO
+  SIN_DATO
+}
+
 /// Los aptos y derechos que condicionan el paso, todos con vigencia.
 enum TipoHabilitacion {
   APTO_MEDICO
@@ -172,6 +190,7 @@ model Persona {
   fichajes       Fichaje[]
   aptosEmitidos  Habilitacion[]   @relation("HabilitacionEmisor")
   carteraDe      Socio[]          @relation("SocioCobrador")
+  accionesDispositivo AccionDispositivo[]
 
   creadoEn       DateTime @default(now())
   actualizadoEn  DateTime @updatedAt
@@ -294,6 +313,8 @@ model Predio {
   egresos       Egreso[]
   fichajes      Fichaje[]
   lotes         Lote[]
+  dispositivos  Dispositivo[]
+  croquis       Croquis[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -308,11 +329,11 @@ model Acceso {
   nombre    String
   tipo      TipoAcceso
 
-  /// Con Starlink la orden tiene que salir por la RED LOCAL, nunca por la nube de
-  /// eWeLink: con la PC y el interruptor detrás del mismo enlace, una orden por la
-  /// nube sube y baja por satélite dos veces (1 a 3 s para abrir una barrera).
-  dispositivoTipo String?   // "relay_usb" | "sonoff_lan" | "sonoff_cloud"
-  dispositivoRef  String?   // puerto serie, IP local o device id según el tipo
+  /// El interruptor que abre este acceso, tomado del registro único de dispositivos.
+  /// Antes eran dos campos sueltos acá; se unificaron para no tener dos lugares donde
+  /// configurar lo mismo.
+  dispositivoId String?
+  dispositivo   Dispositivo? @relation(fields: [dispositivoId], references: [id])
   activo    Boolean    @default(true)
 
   /// Qué exige este puesto para dejar pasar. La pileta pide apto médico; la bajada de
@@ -684,4 +705,133 @@ model Fichaje {
   salida    DateTime?
 
   @@index([predioId, entrada])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dispositivos
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Un interruptor Sonoff de un canal: una luz, una bomba, el riego, una barrera.
+ *
+ * Registro ÚNICO. Los accesos apuntan acá en vez de guardar su propia configuración,
+ * para que no haya dos lugares donde definir el mismo aparato.
+ */
+model Dispositivo {
+  id        String   @id @default(cuid())
+  predioId  String
+  predio    Predio   @relation(fields: [predioId], references: [id], onDelete: Cascade)
+  nombre    String
+  /// Identificador del aparato en eWeLink. La aplicación de eWeLink se usa sólo para
+  /// darlo de alta y vincularlo; de ahí en adelante se opera desde acá.
+  deviceId  String   @unique
+  proposito PropositoDispositivo @default(OTRO)
+
+  /// Cómo se le habla: "relay_usb", "sonoff_lan" o "sonoff_cloud". En los predios
+  /// satelitales tiene que ser local (ver la validación en acciones/dispositivos.ts).
+  via       String   @default("sonoff_lan")
+  /// IP en la red local o puerto serie, según la vía.
+  direccion String?
+  /// Dónde está físicamente, en palabras: "tablero del quincho", "casilla de bombas".
+  ubicacion String?
+
+  /// Los que pueden hacer daño piden confirmación antes de accionarse.
+  requiereConfirmacion Boolean @default(false)
+  activo    Boolean  @default(true)
+
+  /// Último estado conocido y cuándo se supo. Si la lectura es vieja, la pantalla
+  /// muestra SIN_DATO en vez de arriesgar un estado que ya no es cierto.
+  estado    EstadoDispositivo @default(SIN_DATO)
+  estadoEn  DateTime?
+
+  /// Ubicación en el croquis, en PORCENTAJE del ancho y del alto: así se ve igual en el
+  /// monitor de la oficina y en un celular.
+  croquisId String?
+  croquis   Croquis? @relation(fields: [croquisId], references: [id])
+  x         Float?
+  y         Float?
+
+  accesos   Acceso[]
+  horarios  HorarioDispositivo[]
+  acciones  AccionDispositivo[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([predioId, proposito])
+}
+
+/// Croquis de un sector del predio. Son varios por predio: El Nihuil no entra en uno.
+model Croquis {
+  id       String @id @default(cuid())
+  predioId String
+  predio   Predio @relation(fields: [predioId], references: [id], onDelete: Cascade)
+  nombre   String
+  /// Nombre del archivo guardado. Se sirve por /api/croquis/[archivo], no desde public:
+  /// los archivos subidos no pueden vivir en el árbol del build.
+  archivo  String
+  orden    Int    @default(0)
+
+  dispositivos Dispositivo[]
+
+  creadoEn DateTime @default(now())
+
+  @@index([predioId, orden])
+}
+
+/**
+ * Encendido y apagado programado.
+ *
+ * Lo ejecuta la PC de la portería, que está encendida las 24 horas, NO el servidor: si
+ * el enlace se cae a las 6 de la mañana, el riego tiene que arrancar igual. El servidor
+ * sólo define el horario y se lo baja al nodo.
+ */
+model HorarioDispositivo {
+  id            String @id @default(cuid())
+  dispositivoId String
+  dispositivo   Dispositivo @relation(fields: [dispositivoId], references: [id], onDelete: Cascade)
+
+  /// "06:00", hora local del predio.
+  hora     String
+  /// Verdadero enciende, falso apaga.
+  encender Boolean
+  /// Días de la semana, 1 = lunes. Vacío significa todos los días.
+  dias     Int[]
+  activo   Boolean @default(true)
+
+  creadoEn DateTime @default(now())
+
+  @@index([dispositivoId])
+}
+
+/**
+ * Quién accionó qué, cuándo y desde dónde.
+ *
+ * Con bombas y riego en juego, y tres roles con permiso para operar, esto no es un lujo:
+ * si una bomba trabajó de más o el riego no arrancó, tiene que poder saberse.
+ *
+ * También es la cola de órdenes pendientes que el nodo del predio va a buscar.
+ */
+model AccionDispositivo {
+  id            String @id @default(cuid())
+  dispositivoId String
+  dispositivo   Dispositivo @relation(fields: [dispositivoId], references: [id], onDelete: Cascade)
+
+  personaId String?
+  persona   Persona? @relation(fields: [personaId], references: [id])
+
+  /// "ENCENDER" o "APAGAR". Siempre absoluto, nunca "invertir": si una orden se
+  /// duplica sobre un enlace inestable, no pasa nada.
+  accion String
+  /// "MANUAL", "HORARIO" o "SISTEMA".
+  origen String @default("MANUAL")
+
+  /// Nulo mientras está pendiente. Lo completa el nodo cuando la ejecutó.
+  aplicadaEn DateTime?
+  error      String?
+
+  creadoEn DateTime @default(now())
+
+  @@index([dispositivoId, creadoEn])
+  @@index([aplicadaEn])
 }

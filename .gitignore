@@ -20,4 +20,7 @@ tsconfig.tsbuildinfo
 # Datos del nodo local de portería: réplica y cola, nunca se versionan.
 nodo-predio/data/
 
+# Archivos subidos por el club (croquis). Se respaldan aparte, no van al repositorio.
+datos/
+
 # Los assets del cliente sí se versionan (logo y fotos de los predios).

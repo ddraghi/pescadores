@@ -13,7 +13,19 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
 
-**Etapas 0 a 5 hechas.** Siguiente: etapa 6, dispositivos y croquis.
+**Etapas 0 a 6 hechas** (la 6, en su mitad de plataforma). Siguiente: etapa 7, el socio.
+
+⚠️ **El nodo del predio no está escrito.** Es lo que falta de la etapa 6 y necesita
+hardware sobre la mesa. Mientras tanto, `SIMULAR_DISPOSITIVOS=true` hace que las órdenes
+se den por aplicadas para poder probar las pantallas. **Antes de producción hay que
+apagarlo.**
+
+El contrato que el nodo tiene que cumplir, cuando se escriba:
+- Leer `AccionDispositivo` con `aplicadaEn` nulo, ejecutar por red local y completarla
+- Reportar el estado de cada `Dispositivo` (`estado` + `estadoEn`), que es lo que hace
+  que el testigo deje de decir «sin dato»
+- Bajarse `HorarioDispositivo` y **dispararlos él**, nunca el servidor
+- Conexión siempre saliente, por el CGNAT de Starlink
 
 ### Lo que el cliente ya definió para las etapas 6 y 7
 

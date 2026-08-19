@@ -6,15 +6,23 @@ import { AccesosCliente } from './cliente';
 export default async function Pagina() {
   await exigirCapacidad('administrar_estructura');
 
-  const [accesos, predios] = await Promise.all([
+  const [accesos, predios, dispositivos] = await Promise.all([
     prisma.acceso.findMany({
       orderBy: [{ predio: { orden: 'asc' } }, { tipo: 'asc' }, { nombre: 'asc' }],
-      include: { predio: { select: { nombre: true, conexionSatelital: true } } },
+      include: {
+        predio: { select: { nombre: true, conexionSatelital: true } },
+        dispositivo: { select: { nombre: true, via: true } },
+      },
     }),
     prisma.predio.findMany({
       where: { activo: true },
       orderBy: { orden: 'asc' },
       select: { id: true, nombre: true, conexionSatelital: true },
+    }),
+    prisma.dispositivo.findMany({
+      where: { activo: true },
+      orderBy: { nombre: 'asc' },
+      select: { id: true, nombre: true, predioId: true, via: true },
     }),
   ]);
 
@@ -26,15 +34,18 @@ export default async function Pagina() {
       />
       <AccesosCliente
         predios={predios}
+        dispositivos={dispositivos}
         accesos={accesos.map((a) => ({
           id: a.id,
           nombre: a.nombre,
           tipo: a.tipo,
           predioId: a.predioId,
           predioNombre: a.predio.nombre,
-          predioSatelital: a.predio.conexionSatelital,
-          dispositivoTipo: a.dispositivoTipo,
-          dispositivoRef: a.dispositivoRef,
+          dispositivoId: a.dispositivoId,
+          dispositivoNombre: a.dispositivo?.nombre ?? null,
+          dispositivoVia: a.dispositivo?.via ?? null,
+          exigeAptoMedico: a.exigeAptoMedico,
+          exigeDerecho: a.exigeDerecho,
           activo: a.activo,
         }))}
       />

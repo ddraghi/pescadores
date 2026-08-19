@@ -9,7 +9,9 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { TipoAcceso, TipoAlojamiento, TipoEspacio, UnidadReserva, ModoReserva } from '@prisma/client';
+import {
+  ModoReserva, TipoAcceso, TipoAlojamiento, TipoEspacio, TipoHabilitacion, UnidadReserva,
+} from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { exigirCapacidadApi } from '@/lib/auth';
 import { aSlug, casilla, fallo, numero, texto, traducirError, EXITO } from '@/lib/acciones/comun';
@@ -78,28 +80,15 @@ export async function guardarAcceso(_prev: Resp | null, datos: FormData): Promis
     if (!predioId) return fallo('Elegí a qué predio pertenece.');
     if (!Object.values(TipoAcceso).includes(tipo)) return fallo('Elegí el tipo de acceso.');
 
-    const dispositivoTipo = texto(datos, 'dispositivoTipo') || null;
-
-    // En los predios con Starlink el interruptor tiene que salir por la red local: una
-    // orden por la nube de eWeLink sube y baja por satélite dos veces.
-    if (dispositivoTipo === 'sonoff_cloud') {
-      const predio = await prisma.predio.findUnique({
-        where: { id: predioId },
-        select: { conexionSatelital: true, nombre: true },
-      });
-      if (predio?.conexionSatelital) {
-        return fallo(
-          `${predio.nombre} se conecta por satélite. Ahí el interruptor tiene que ir por red local (relay USB o Sonoff en la LAN): por la nube, la orden tarda segundos en abrir.`,
-        );
-      }
-    }
-
+    // El interruptor sale del registro de dispositivos. La validación de si la vía
+    // sirve para un predio satelital vive allá, no acá: un solo lugar.
     const campos = {
       nombre,
       predioId,
       tipo,
-      dispositivoTipo,
-      dispositivoRef: texto(datos, 'dispositivoRef') || null,
+      dispositivoId: texto(datos, 'dispositivoId') || null,
+      exigeAptoMedico: casilla(datos, 'exigeAptoMedico'),
+      exigeDerecho: (texto(datos, 'exigeDerecho') || null) as TipoHabilitacion | null,
     };
 
     if (id) await prisma.acceso.update({ where: { id }, data: campos });

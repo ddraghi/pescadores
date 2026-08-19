@@ -21,11 +21,13 @@
     "probar:csv": "tsx scripts/probar-csv.ts",
     "socios:prueba": "tsx scripts/socios-de-prueba.ts",
     "probar:tarifario": "tsx scripts/probar-tarifario.ts",
-    "probar": "npm run probar:csv && npm run probar:tarifario && npm run probar:cuotas && npm run probar:acceso && npm run probar:rutas",
+    "probar": "npm run probar:csv && npm run probar:tarifario && npm run probar:cuotas && npm run probar:acceso && npm run probar:dispositivos && npm run probar:rutas",
     "probar:rutas": "tsx scripts/probar-rutas.ts",
     "tarifario:inicial": "tsx scripts/tarifario-inicial.ts",
     "probar:cuotas": "tsx scripts/probar-cuotas.ts",
-    "probar:acceso": "tsx scripts/probar-acceso.ts"
+    "probar:acceso": "tsx scripts/probar-acceso.ts",
+    "probar:dispositivos": "tsx scripts/probar-dispositivos.ts",
+    "dispositivos:prueba": "tsx scripts/dispositivos-de-prueba.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.3.0",

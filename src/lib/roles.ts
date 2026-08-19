@@ -52,7 +52,8 @@ export type Capacidad =
   | 'arquear_cajas'           // cerrar y consolidar cajas de todo el club
   | 'operar_porteria'         // identificar, decidir, cobrar y abrir
   | 'operar_control'          // identificar, verificar y abrir; nunca cobra
-  | 'administrar_predio'      // disponibilidad, calendario, dispositivos
+  | 'administrar_predio'      // disponibilidad, calendario, alta de dispositivos
+  | 'operar_dispositivos'     // encender y apagar: jefe de predio, maestranza y portero
   | 'reservar_prioritario'
   | 'ver_personal'            // control horario de los dependientes del predio
   | 'fichar'                  // marcar su propia entrada y salida
@@ -135,6 +136,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
     designa: [],
     puede: [
       'administrar_predio',
+      'operar_dispositivos',
       'reservar_prioritario',
       'ver_personal',
       'ver_ocupacion',
@@ -147,7 +149,7 @@ export const ROLES: Record<Rol, DefinicionRol> = {
     ruta: RUTA_POR_ROL.PORTERO,
     alcance: 'predio',
     designa: [],
-    puede: ['operar_porteria', 'cobrar', 'ver_socios', 'fichar'],
+    puede: ['operar_porteria', 'cobrar', 'ver_socios', 'fichar', 'operar_dispositivos'],
   },
 
   CONTROL_PASO: {
@@ -164,8 +166,8 @@ export const ROLES: Record<Rol, DefinicionRol> = {
     ruta: RUTA_POR_ROL.MAESTRANZA,
     alcance: 'predio',
     designa: [],
-    // Funciones pendientes de definición: por ahora sólo ficha entrada y salida.
-    puede: ['fichar'],
+    // El resto de sus funciones está pendiente de definición.
+    puede: ['fichar', 'operar_dispositivos'],
   },
 
   PROFESOR: {
