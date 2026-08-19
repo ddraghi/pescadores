@@ -27,7 +27,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
   ADMIN_GENERAL: [
     { etiqueta: 'Panel',            href: '/admin',              icono: Home,      etapa: 1 },
     { etiqueta: 'Designaciones',    href: '/admin/designaciones', icono: KeyRound,  etapa: 2 },
-    { etiqueta: 'Configuración',    href: '/admin/configuracion', icono: Settings,  etapa: 2 },
+    { etiqueta: 'Configuración',    href: '/admin/configuracion', icono: Settings,  etapa: 6 },
     { etiqueta: 'Socios',           href: '/admin/socios',       icono: Users,     etapa: 3 },
     { etiqueta: 'Cobranzas',        href: '/admin/cobranzas',    icono: BarChart3, etapa: 4 },
     { etiqueta: 'Ocupación',        href: '/admin/ocupacion',    icono: Building2, etapa: 7 },
@@ -51,7 +51,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Morosos',          href: '/tesoreria/morosos',    icono: FileText, etapa: 4 },
     { etiqueta: 'Cobros',           href: '/tesoreria/cobros',     icono: Wallet,   etapa: 4 },
     { etiqueta: 'Cajas y arqueos',  href: '/tesoreria/cajas',      icono: Landmark, etapa: 4 },
-    { etiqueta: 'Cobradores',       href: '/tesoreria/cobradores', icono: Users,    etapa: 4 },
+    { etiqueta: 'Cobradores',       href: '/tesoreria/cobradores', icono: Users,    etapa: 2 },
     { etiqueta: 'Egresos',          href: '/tesoreria/egresos',    icono: BarChart3, etapa: 4 },
   ],
 
@@ -119,7 +119,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
 };
 
 /** Etapa del plan ya construida. Subir este número enciende los ítems de esa etapa. */
-export const ETAPA_ACTUAL = 1;
+export const ETAPA_ACTUAL = 2;
 
 export function disponible(item: ItemMenu): boolean {
   return item.etapa <= ETAPA_ACTUAL;

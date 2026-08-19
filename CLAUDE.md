@@ -13,7 +13,7 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
 
-**Etapas 0 y 1 hechas.** Siguiente: etapa 2, estructura del club (ABM del Secretario).
+**Etapas 0, 1 y 2 hechas.** Siguiente: etapa 3, padrón de socios.
 
 Al terminar una etapa hay que subir `ETAPA_ACTUAL` en `src/lib/menus.ts`: eso enciende
 solos los ítems de menú de esa etapa.
@@ -136,6 +136,23 @@ Consecuencias prácticas:
   para no dejar al portero trabado.
 
 ---
+
+## Cómo se escribe una pantalla de administración
+
+El patrón está en `src/app/(panel)/secretaria/predios/`. Copiarlo:
+
+1. `page.tsx` es un componente de servidor: exige la capacidad, consulta con Prisma y
+   pasa datos planos al cliente.
+2. `cliente.tsx` tiene la tabla y los formularios, usando `DialogoFormulario` (se cierra
+   solo al guardar, muestra el error adentro sin perder lo tipeado) y `BotonAccion`.
+3. La lógica va en `src/lib/acciones/`, con `'use server'`. **Toda acción empieza
+   exigiendo su capacidad**: la pantalla no es el control de acceso.
+4. Las acciones devuelven `{ ok }` o `{ ok: false, error }` — nunca lanzan al formulario.
+   `traducirError()` convierte los errores de Prisma en algo que una persona entiende.
+
+Los controles de formulario (`Selector`, `Casilla`) usan los elementos nativos del
+navegador en vez de Radix: mucho menos código y responden mejor al dedo en las pantallas
+táctiles de las porterías.
 
 ## Convenciones
 

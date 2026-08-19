@@ -34,13 +34,22 @@ reales, y este plan.
 
 ---
 
-## Etapa 2 — Estructura del club · Secretario
-**~1-2 sesiones**
+## Etapa 2 — Estructura del club · Secretario ✅
+**~1 sesión · HECHA**
 
-ABM de predios, alojamientos, espacios (canchas y quinchos), accesos (portería y
-puntos de control) y actividades. Más el ABM del staff con sus roles y predios.
+- **Predios**: alta, edición y baja, con la marca de enlace satelital
+- **Instalaciones**: alojamientos (por noche) y espacios (canchas por hora, quinchos
+  por bloque), en solapas separadas porque se reservan distinto
+- **Accesos**: porterías y puntos de control, con su interruptor. El sistema **rechaza**
+  configurar un Sonoff por la nube en un predio satelital
+- **Actividades**: con su forma de cobro y los predios donde se dicta
+- **Designaciones**: una sola pantalla que se adapta a quién mira — el Administrador
+  designa Secretario y Tesorero, el Secretario al personal, el Tesorero a sus cobradores
 
-**Queda funcionando:** el club entero queda cargado y configurable sin tocar código.
+**Queda funcionando:** el club entero se carga y configura sin tocar código, y la
+cadena de designación del estatuto se puede ejercer, no sólo mirar.
+
+Nada se borra: se da de baja. Un predio tiene años de ingresos y cobros colgando.
 
 ---
 
