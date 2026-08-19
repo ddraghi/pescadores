@@ -75,14 +75,28 @@ pero no necesita usuario.
 
 ---
 
-## Etapa 4 — Dinero · Tesorero
-**~2-3 sesiones**
+## Etapa 4 — Dinero · Tesorero ✅
+**~1 sesión · HECHA**
 
-Tarifario multidimensional (concepto × predio × condición × vigencia), cuotas,
-cobros, cajas con arqueo por medio de pago, egresos, y el sub-rol Cobrador con su
-cartera y su rendición.
+- **Tarifario** cruzando concepto × predio × condición × vigencia. Para aumentar se
+  carga un precio nuevo con su fecha; el viejo queda y sigue explicando los cobros
+  anteriores. Cargado con los precios reales del tarifario vigente del club
+- **Cuotas**: generación mensual, condonación, y recálculo de morosidad según el art. 28
+  —tres cuotas impagas emplazan—. Detecta pero no declara cesante a nadie: eso es de la
+  comisión
+- **Morosos**: la pantalla propia que exige el art. 46 inc. e, con cobro y asignación de
+  cobrador
+- **Cobros** con clave de idempotencia, para que un reintento sobre Starlink no cobre dos
+  veces
+- **Cajas y arqueos**: el turno se abre, acumula y se cierra declarando cuánto hay de
+  cada medio. Lo declarado y lo registrado se guardan juntos; la diferencia es el dato
+- **Egresos**, planilla simple
+- **Cobrador** con su cartera y su rendición; **portero** con su caja y sus movimientos
 
-**Queda funcionando:** se cobra, se rinde y se arquea. Es la etapa más grande.
+**Queda funcionando:** se cobra, se rinde y se arquea.
+
+Quién paga cuota no está en el código: sale del tarifario. Si una categoría no tiene
+precio cargado, no se le genera cuota — así es como los vitalicios quedan afuera.
 
 ---
 

@@ -56,8 +56,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
   ],
 
   COBRADOR: [
-    { etiqueta: 'Mi cartera',       href: '/cobranza',            icono: Home,   etapa: 1 },
-    { etiqueta: 'Cobrar',           href: '/cobranza/cobrar',     icono: Wallet, etapa: 4 },
+    { etiqueta: 'Mi cartera',       href: '/cobranza',            icono: Wallet,  etapa: 1 },
     { etiqueta: 'Mi rendición',     href: '/cobranza/rendicion',  icono: Receipt, etapa: 4 },
   ],
 
@@ -71,14 +70,16 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
   ],
 
   PORTERO: [
-    { etiqueta: 'Ingreso',          href: '/porteria',             icono: DoorOpen,     etapa: 5 },
+    { etiqueta: 'Panel',            href: '/porteria',             icono: Home,         etapa: 1 },
+    { etiqueta: 'Ingreso',          href: '/porteria/ingreso',     icono: DoorOpen,     etapa: 5 },
     { etiqueta: 'Alojamiento',      href: '/porteria/alojamiento', icono: Building2,    etapa: 7 },
     { etiqueta: 'Mi caja',          href: '/porteria/caja',        icono: Landmark,     etapa: 4 },
     { etiqueta: 'Movimientos',      href: '/porteria/movimientos', icono: ClipboardList, etapa: 4 },
   ],
 
   CONTROL_PASO: [
-    { etiqueta: 'Control de paso',  href: '/control',        icono: ScanLine,     etapa: 5 },
+    { etiqueta: 'Panel',            href: '/control',          icono: Home,          etapa: 1 },
+    { etiqueta: 'Control de paso',  href: '/control/paso',     icono: ScanLine,      etapa: 5 },
     { etiqueta: 'Registro',         href: '/control/registro', icono: ClipboardList, etapa: 5 },
   ],
 
@@ -102,15 +103,16 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
   ],
 
   MEDICO: [
-    { etiqueta: 'Cola de espera',   href: '/medico',             icono: Stethoscope, etapa: 5 },
+    { etiqueta: 'Panel',            href: '/medico',             icono: Home,        etapa: 1 },
+    { etiqueta: 'Cola de espera',   href: '/medico/cola',        icono: Stethoscope, etapa: 5 },
     { etiqueta: 'Historial',        href: '/medico/historial',   icono: FileText,    etapa: 5 },
     { etiqueta: 'Aptos por vencer', href: '/medico/vencimientos', icono: Bell,       etapa: 5 },
   ],
 
   SOCIO: [
     { etiqueta: 'Mi panel',         href: '/socio',              icono: Home,        etapa: 1 },
-    { etiqueta: 'Mi grupo familiar', href: '/socio/familia',     icono: Users,       etapa: 3 },
-    { etiqueta: 'Mi cuota',         href: '/socio/cuota',        icono: CreditCard,  etapa: 4 },
+    { etiqueta: 'Mi grupo familiar', href: '/socio/familia',     icono: Users,       etapa: 7 },
+    { etiqueta: 'Mi cuota',         href: '/socio/cuota',        icono: CreditCard,  etapa: 7 },
     { etiqueta: 'Mis reservas',     href: '/socio/reservas',     icono: CalendarDays, etapa: 7 },
     { etiqueta: 'Mi credencial',    href: '/socio/credencial',   icono: ScanLine,    etapa: 7 },
     { etiqueta: 'Mi apto médico',   href: '/socio/apto',         icono: Stethoscope, etapa: 5 },
@@ -119,7 +121,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
 };
 
 /** Etapa del plan ya construida. Subir este número enciende los ítems de esa etapa. */
-export const ETAPA_ACTUAL = 3;
+export const ETAPA_ACTUAL = 4;
 
 export function disponible(item: ItemMenu): boolean {
   return item.etapa <= ETAPA_ACTUAL;

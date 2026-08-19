@@ -544,10 +544,20 @@ model ItemTarifario {
   vigenciaDesde DateTime
   vigenciaHasta DateTime?
 
+  /// Sólo para la cuota social: a qué categoría de socio le corresponde este precio.
+  /// Que una categoría NO tenga item es lo que define que no paga cuota — así el club
+  /// decide cargando o no el precio, en vez de que lo decidamos nosotros en el código.
+  categoriaSocio CategoriaSocio?
+
+  /// Cuota de grupo familiar: la paga el titular una vez por todo el grupo, en lugar de
+  /// que pague cada integrante por separado.
+  porGrupoFamiliar Boolean @default(false)
+
   creadoEn    DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
   @@index([concepto, condicion, vigenciaDesde])
+  @@index([categoriaSocio, porGrupoFamiliar])
 }
 
 model Cuota {
@@ -560,11 +570,19 @@ model Cuota {
   estado      EstadoCuota @default(PENDIENTE)
   vencimiento DateTime
 
+  /// Qué se le cobró: "Cuota social · Activo" o "Cuota social · Grupo familiar".
+  concepto    String      @default("Cuota social")
+  /// Con qué cobro se saldó. Nulo mientras esté pendiente.
+  cobroId     String?
+  cobro       Cobro?      @relation(fields: [cobroId], references: [id])
+  pagadaEn    DateTime?
+
   creadoEn    DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
   @@unique([socioId, periodo])
   @@index([estado])
+  @@index([periodo])
 }
 
 /// Turno de caja de un portero, o rendición de un cobrador. El arqueo discrimina
@@ -622,6 +640,7 @@ model Cobro {
   comprobante Json?
 
   ingreso     Ingreso?
+  cuotas      Cuota[]
 
   ocurridoEn  DateTime
   registradoEn DateTime @default(now())

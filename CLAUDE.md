@@ -13,11 +13,16 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
 
-**Etapas 0 a 3 hechas.** Siguiente: etapa 4, el dinero (Tesorero) — la más grande.
+**Etapas 0 a 4 hechas.** Siguiente: etapa 5, la puerta.
+
+⚠️ Antes de armar las pantallas del **Jefe de predio** y del **Socio**, el cliente tiene
+pedidos especiales que todavía no pasó. La etapa 5 incluye dos: `/predio/ingresos` y
+`/socio/apto`. Preguntarle antes de construirlas.
 
 ```bash
-npm run probar:csv      # prueba el lector del CSV del padrón, sin base
+npm run probar          # corre todas las pruebas (no necesitan base)
 npm run socios:prueba   # genera socios de prueba, con los casos del estatuto
+npm run tarifario:inicial  # carga el tarifario real del club
 ```
 
 Al terminar una etapa hay que subir `ETAPA_ACTUAL` en `src/lib/menus.ts`: eso enciende
