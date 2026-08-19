@@ -9,18 +9,27 @@
 
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
-import { CategoriaSocio, EstadoSocio, Rol } from '@prisma/client';
+import { CategoriaSocio, EstadoSocio, Prisma, Rol } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { exigirCapacidadApi } from '@/lib/auth';
 import { fallo, numero, texto, traducirError, EXITO } from '@/lib/acciones/comun';
 import {
   EDAD_FIN_CADETE,
+  categoriaPorEdad,
   edad,
   puedeCambiarEstado,
   type NombreEstado,
 } from '@/lib/socios';
 
 type Resp = { ok: true } | { ok: false; error: string };
+
+/**
+ * Error de carga con un mensaje ya escrito para quien está llenando el formulario.
+ *
+ * Sirve para cortar una transacción a mitad de camino sin perder la explicación: lanzar
+ * revierte todo, y el mensaje llega igual al formulario.
+ */
+class ErrorDeCarga extends Error {}
 
 function refrescar() {
   revalidatePath('/secretaria', 'layout');
@@ -33,6 +42,173 @@ function fecha(datos: FormData, campo: string): Date | null {
   if (!v) return null;
   const d = new Date(`${v}T00:00:00`);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// ─── Grupo familiar ──────────────────────────────────────────────────────────
+
+/**
+ * Un integrante tal como viene del formulario del titular.
+ *
+ * Los campos llegan como listas paralelas —`fam.nombre` una vez por fila— y se leen por
+ * posición. El formulario siempre manda todas las casillas de cada fila, aunque estén
+ * vacías, justamente para que las posiciones no se corran.
+ */
+interface FilaFamiliar {
+  id: string;
+  nombre: string;
+  dni: string;
+  numeroSocio: number | null;
+  fechaNacimiento: Date | null;
+  parentesco: string;
+}
+
+function leerFamiliares(datos: FormData): FilaFamiliar[] {
+  const ids = datos.getAll('fam.id').map(String);
+  const nombres = datos.getAll('fam.nombre').map(String);
+  const dnis = datos.getAll('fam.dni').map(String);
+  const numeros = datos.getAll('fam.numeroSocio').map(String);
+  const nacimientos = datos.getAll('fam.fechaNacimiento').map(String);
+  const parentescos = datos.getAll('fam.parentesco').map(String);
+
+  const filas: FilaFamiliar[] = [];
+  for (let i = 0; i < nombres.length; i++) {
+    const nombre = (nombres[i] ?? '').trim();
+    const dni = (dnis[i] ?? '').trim();
+    // Una fila del todo vacía es una que abrieron y no llenaron: se ignora.
+    if (!nombre && !dni && !(ids[i] ?? '')) continue;
+
+    const nac = (nacimientos[i] ?? '').trim();
+    const fecha = nac ? new Date(`${nac}T00:00:00`) : null;
+
+    filas.push({
+      id: (ids[i] ?? '').trim(),
+      nombre,
+      dni,
+      numeroSocio: Number((numeros[i] ?? '').trim()) || null,
+      fechaNacimiento: fecha && !Number.isNaN(fecha.getTime()) ? fecha : null,
+      parentesco: (parentescos[i] ?? '').trim(),
+    });
+  }
+  return filas;
+}
+
+/** Revisa las filas antes de tocar la base, para no dejar medio grupo cargado. */
+function revisarFamiliares(filas: FilaFamiliar[]): string | null {
+  const dnisVistos = new Set<string>();
+  const numerosVistos = new Set<number>();
+
+  for (const f of filas) {
+    if (!f.nombre) return 'Cada integrante necesita nombre y apellido.';
+    if (!/^\d{7,9}$/.test(f.dni)) {
+      return `El DNI de ${f.nombre} tiene que ser de 7 a 9 dígitos, sin puntos.`;
+    }
+    if (!f.numeroSocio || f.numeroSocio < 1) {
+      return `Falta el número de socio de ${f.nombre}.`;
+    }
+    if (dnisVistos.has(f.dni)) return `El DNI ${f.dni} está repetido en el grupo.`;
+    if (numerosVistos.has(f.numeroSocio)) {
+      return `El número de socio ${f.numeroSocio} está repetido en el grupo.`;
+    }
+    dnisVistos.add(f.dni);
+    numerosVistos.add(f.numeroSocio);
+  }
+  return null;
+}
+
+/**
+ * Deja el grupo del titular exactamente como vino del formulario.
+ *
+ * Lo que no está en la lista se desprende del grupo, **no se borra**: el padrón es
+ * histórico y un socio nunca desaparece (queda suelto, con su cuota individual).
+ */
+async function sincronizarFamiliares(
+  tx: Prisma.TransactionClient,
+  titularId: string,
+  fechaIngreso: Date,
+  filas: FilaFamiliar[],
+): Promise<string | null> {
+  const conservados: string[] = [];
+
+  for (const f of filas) {
+    const datosPersona = {
+      nombre: f.nombre,
+      dni: f.dni,
+      fechaNacimiento: f.fechaNacimiento,
+    };
+
+    if (f.id) {
+      const actual = await tx.socio.findUnique({
+        where: { id: f.id },
+        select: { personaId: true },
+      });
+      if (!actual) return `${f.nombre} ya no está en el padrón.`;
+
+      await tx.persona.update({ where: { id: actual.personaId }, data: datosPersona });
+      await tx.socio.update({
+        where: { id: f.id },
+        data: { numeroSocio: f.numeroSocio!, parentesco: f.parentesco || null, titularId },
+      });
+      conservados.push(f.id);
+      continue;
+    }
+
+    // Sin id: puede ser gente nueva o alguien que ya estaba suelto en el padrón. Se
+    // busca por DNI antes de crear, que es lo que evita el duplicado.
+    const persona = await tx.persona.findUnique({
+      where: { dni: f.dni },
+      select: { id: true, nombre: true, socio: { select: { id: true, titularId: true } } },
+    });
+
+    if (persona?.socio) {
+      if (persona.socio.titularId && persona.socio.titularId !== titularId) {
+        return `${persona.nombre} ya integra otro grupo familiar. Sacalo de ese grupo primero.`;
+      }
+      const tieneGrupoPropio = await tx.socio.count({ where: { titularId: persona.socio.id } });
+      if (tieneGrupoPropio > 0) {
+        return `${persona.nombre} es titular de su propio grupo familiar: no puede colgar de otro.`;
+      }
+      // Ya existe en el padrón: se lo suma al grupo y se le respeta su número, que es
+      // su identidad. Los datos personales se corrigen desde su propia ficha.
+      await tx.socio.update({
+        where: { id: persona.socio.id },
+        data: { titularId, parentesco: f.parentesco || null },
+      });
+      conservados.push(persona.socio.id);
+      continue;
+    }
+
+    // Art. 22: el personal y los concesionarios no pueden ser socios.
+    if (persona) {
+      return `El DNI ${f.dni} ya está cargado como ${persona.nombre}, que no es socio. Un empleado o concesionario no puede serlo (art. 22).`;
+    }
+
+    const creada = await tx.persona.create({
+      data: {
+        ...datosPersona,
+        socio: {
+          create: {
+            numeroSocio: f.numeroSocio!,
+            // La categoría sale de la edad y no se pregunta: cambiarla después es un
+            // acto estatutario y se hace desde el padrón, con su constancia.
+            categoria: categoriaPorEdad(f.fechaNacimiento) as CategoriaSocio,
+            fechaIngreso,
+            parentesco: f.parentesco || null,
+            titularId,
+          },
+        },
+      },
+      select: { socio: { select: { id: true } } },
+    });
+    if (creada.socio) conservados.push(creada.socio.id);
+  }
+
+  // Los que ya no figuran quedan sueltos.
+  await tx.socio.updateMany({
+    where: { titularId, id: { notIn: conservados.length ? conservados : ['-'] } },
+    data: { titularId: null, parentesco: null },
+  });
+
+  return null;
 }
 
 // ─── Alta y edición ──────────────────────────────────────────────────────────
@@ -87,10 +263,12 @@ export async function guardarSocio(_prev: Resp | null, datos: FormData): Promise
     }
     const hash = clave ? await bcrypt.hash(clave, 10) : undefined;
 
-    // Grupo familiar: se puede crear uno nuevo, sumarse a uno existente, o ninguno.
-    const grupoExistente = texto(datos, 'grupoFamiliarId');
-    const grupoNuevo = texto(datos, 'grupoFamiliarNuevo');
-    const esTitular = texto(datos, 'esTitular') === 'on';
+    // Grupo familiar. No hay un grupo que crear: el grupo es este socio y los que se
+    // carguen acá abajo, y se llama como él.
+    const esGrupoFamiliar = texto(datos, 'esGrupoFamiliar') === 'on';
+    const familiares = esGrupoFamiliar ? leerFamiliares(datos) : [];
+    const problemaFamilia = revisarFamiliares(familiares);
+    if (problemaFamilia) return fallo(problemaFamilia);
 
     const datosPersona = {
       nombre,
@@ -107,32 +285,30 @@ export async function guardarSocio(_prev: Resp | null, datos: FormData): Promise
       categoria,
       fechaIngreso: ingreso,
       permisoHasta: categoria === CategoriaSocio.TRANSEUNTE ? permisoHasta : null,
-      esTitular,
       observaciones: texto(datos, 'observaciones') || null,
     };
 
     await prisma.$transaction(async (tx) => {
-      let grupoFamiliarId: string | null = grupoExistente || null;
-      if (grupoNuevo) {
-        const grupo = await tx.grupoFamiliar.create({ data: { nombre: grupoNuevo } });
-        grupoFamiliarId = grupo.id;
-      }
-
       if (socioId) {
         const socio = await tx.socio.findUniqueOrThrow({
           where: { id: socioId },
-          select: { personaId: true, grupoFamiliarId: true },
+          select: { personaId: true, titularId: true },
         });
+
+        // Un familiar no puede a su vez encabezar un grupo: el grupo es de un solo
+        // nivel, y encadenarlos rompe la cuenta de quién paga la cuota.
+        if (esGrupoFamiliar && socio.titularId) {
+          throw new ErrorDeCarga(
+            'Este socio ya integra el grupo de otro. Para darle grupo propio, sacalo antes del grupo del titular.',
+          );
+        }
+
         await tx.persona.update({ where: { id: socio.personaId }, data: datosPersona });
-        await tx.socio.update({
-          where: { id: socioId },
-          data: {
-            ...datosSocio,
-            // Sin grupo elegido se conserva el que tenía: editar los datos personales
-            // no puede sacarlo de su familia sin querer.
-            grupoFamiliarId: grupoFamiliarId ?? socio.grupoFamiliarId,
-          },
-        });
+        await tx.socio.update({ where: { id: socioId }, data: datosSocio });
+
+        const problema = await sincronizarFamiliares(tx, socioId, ingreso, familiares);
+        if (problema) throw new ErrorDeCarga(problema);
+
         if (usuario) {
           const tieneRol = await tx.rolAsignado.findFirst({
             where: { personaId: socio.personaId, rol: Rol.SOCIO },
@@ -144,21 +320,29 @@ export async function guardarSocio(_prev: Resp | null, datos: FormData): Promise
           }
         }
       } else {
-        await tx.persona.create({
+        const creada = await tx.persona.create({
           data: {
             ...datosPersona,
-            socio: { create: { ...datosSocio, grupoFamiliarId } },
+            socio: { create: datosSocio },
             ...(usuario
               ? { roles: { create: { rol: Rol.SOCIO, designadoPorId: sesion.personaId } } }
               : {}),
           },
+          select: { socio: { select: { id: true } } },
         });
+
+        // Los familiares cuelgan del titular, así que hace falta que exista primero.
+        if (creada.socio && familiares.length > 0) {
+          const problema = await sincronizarFamiliares(tx, creada.socio.id, ingreso, familiares);
+          if (problema) throw new ErrorDeCarga(problema);
+        }
       }
     });
 
     refrescar();
     return EXITO;
   } catch (e) {
+    if (e instanceof ErrorDeCarga) return fallo(e.message);
     return traducirError(e, 'guardarSocio');
   }
 }

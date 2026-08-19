@@ -1,7 +1,7 @@
 import { exigirCapacidad } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { EncabezadoPantalla } from '@/components/panel/encabezado';
-import { buscarSocios, listarGruposFamiliares, resumenPadron } from '@/lib/datos/socios';
+import { buscarSocios, resumenPadron } from '@/lib/datos/socios';
 import { ESTADOS, type NombreEstado } from '@/lib/socios';
 import { SociosCliente } from './cliente';
 import { ImportarPadron } from './importar';
@@ -23,9 +23,8 @@ export default async function Pagina({
   };
   const pagina = Number(unico(sp.pagina)) || 1;
 
-  const [resultado, grupos, resumen, mayor] = await Promise.all([
+  const [resultado, resumen, mayor] = await Promise.all([
     buscarSocios({ ...filtros, pagina }),
-    listarGruposFamiliares(),
     resumenPadron(),
     prisma.socio.aggregate({ _max: { numeroSocio: true } }),
   ]);
@@ -66,7 +65,6 @@ export default async function Pagina({
 
       <SociosCliente
         socios={resultado.socios}
-        grupos={grupos}
         proximoNumero={(mayor._max.numeroSocio ?? 0) + 1}
         total={resultado.total}
         pagina={resultado.pagina}

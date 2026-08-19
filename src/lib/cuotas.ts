@@ -13,8 +13,10 @@ export interface SocioParaCuota {
   id: string;
   categoria: string;
   estado: string;
-  grupoFamiliarId: string | null;
-  esTitular: boolean;
+  /** Titular del grupo familiar, si este socio cuelga de otro. */
+  titularId: string | null;
+  /** Cuántos familiares cuelgan de él. Mayor a cero lo vuelve titular de un grupo. */
+  familiares: number;
 }
 
 export interface CuotaCalculada {
@@ -59,8 +61,10 @@ export function calcularCuotasDelPeriodo(
       continue;
     }
 
-    const enGrupo = Boolean(s.grupoFamiliarId);
-    if (enGrupo && !s.esTitular) {
+    // El grupo familiar es el titular y los que cuelgan de él: no hay una entidad
+    // aparte que consultar.
+    const enGrupo = s.titularId !== null || s.familiares > 0;
+    if (s.titularId !== null) {
       excluidos.push({ socioId: s.id, motivo: 'lo_paga_el_titular' });
       continue;
     }

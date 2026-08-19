@@ -135,6 +135,10 @@ Los documentos oficiales están en <https://pescadores.ar>. Lo que ya está inco
   todos los roles.
 - **El Tesorero debe informar la nómina de morosos** (art. 46 inc. e): es una pantalla
   propia, no un filtro escondido.
+- **El grupo familiar no es una entidad**: es el socio titular y los que cuelgan de él
+  (`Socio.titularId`), y se llama como él. Los integrantes se cargan dentro de la ficha
+  del titular, pero cada uno es un socio más del padrón, con su número y su parentesco.
+  La cuota la paga el titular por todos.
 - **Barrio de fin de semana del Nihuil**: prestar la vivienda a terceros exige permiso
   con nombres declarados y **máximo 15 días**; sin eso la portería no los deja pasar
   (arts. 9 y 10 del reglamento).

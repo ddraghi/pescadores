@@ -81,7 +81,7 @@ export default async function Pagina({
                   {ESTADOS[s.estado as NombreEstado]}
                 </Pastilla>
               </Td>
-              <Td className="text-sm text-muted-foreground">{s.grupoFamiliarNombre ?? '—'}</Td>
+              <Td className="text-sm text-muted-foreground">{s.grupoFamiliar ?? '—'}</Td>
               <Td className="text-right tabular-nums">{s.antiguedad} a</Td>
             </tr>
           ))}

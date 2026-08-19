@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Campo, Selector } from '@/components/ui/campos';
 import { DialogoFormulario } from '@/components/panel/dialogo-formulario';
 import { Tabla, Encabezados, Th, Td, Filas, Vacio, Pastilla } from '@/components/panel/tabla';
-import { CamposSocio, type GrupoOpcion } from './formulario-socio';
+import { CamposSocio } from './formulario-socio';
 import { guardarSocio, cambiarEstadoSocio, cambiarCategoria } from '@/lib/acciones/socios';
 import {
   CATEGORIAS,
@@ -192,7 +192,6 @@ function Paginado({
 
 export function SociosCliente({
   socios,
-  grupos,
   proximoNumero,
   total,
   pagina,
@@ -201,7 +200,6 @@ export function SociosCliente({
   accionImportar,
 }: {
   socios: SocioEnLista[];
-  grupos: GrupoOpcion[];
   proximoNumero: number;
   total: number;
   pagina: number;
@@ -224,7 +222,7 @@ export function SociosCliente({
             </Button>
           }
         >
-          <CamposSocio grupos={grupos} proximoNumero={proximoNumero} />
+          <CamposSocio proximoNumero={proximoNumero} />
         </DialogoFormulario>
       </div>
 
@@ -278,10 +276,16 @@ export function SociosCliente({
                   </span>
                 </Td>
                 <Td className="text-sm text-muted-foreground">
-                  {s.grupoFamiliarNombre ? (
+                  {s.grupoFamiliar ? (
                     <>
-                      {s.grupoFamiliarNombre}
-                      {s.esTitular && <span className="ml-1 text-[11px] text-marca">titular</span>}
+                      {s.grupoFamiliar}
+                      {s.esTitular ? (
+                        <span className="ml-1 text-[11px] text-marca">titular</span>
+                      ) : (
+                        s.parentesco && (
+                          <span className="ml-1 text-[11px] lowercase">{s.parentesco}</span>
+                        )
+                      )}
                     </>
                   ) : (
                     '—'
@@ -299,7 +303,7 @@ export function SociosCliente({
                         </Button>
                       }
                     >
-                      <CamposSocio socio={s} grupos={grupos} proximoNumero={proximoNumero} />
+                      <CamposSocio socio={s} proximoNumero={proximoNumero} />
                     </DialogoFormulario>
                     <CambiarCategoria socio={s} />
                     <CambiarEstado socio={s} />

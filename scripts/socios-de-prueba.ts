@@ -42,13 +42,18 @@ async function main() {
     ingreso: Date;
     nacimiento?: Date;
     permisoHasta?: Date;
-  }) {
-    const nombre = `${APELLIDOS[creados % APELLIDOS.length]}, ${NOMBRES[(creados * 7) % NOMBRES.length]}`;
+    titularId?: string;
+    parentesco?: string;
+    nombre?: string;
+  }): Promise<string | null> {
+    const nombre =
+      opciones.nombre ??
+      `${APELLIDOS[creados % APELLIDOS.length]}, ${NOMBRES[(creados * 7) % NOMBRES.length]}`;
     const documento = String(dni++);
     const existe = await prisma.persona.findUnique({ where: { dni: documento } });
-    if (existe) return;
+    if (existe) return null;
 
-    await prisma.persona.create({
+    const creada = await prisma.persona.create({
       data: {
         dni: documento,
         nombre,
@@ -60,11 +65,15 @@ async function main() {
             estado: opciones.estado,
             fechaIngreso: opciones.ingreso,
             permisoHasta: opciones.permisoHasta ?? null,
+            titularId: opciones.titularId ?? null,
+            parentesco: opciones.parentesco ?? null,
           },
         },
       },
+      select: { socio: { select: { id: true } } },
     });
     creados += 1;
+    return creada.socio?.id ?? null;
   }
 
   // Cuerpo principal del padrón, repartido entre estados.
@@ -109,6 +118,47 @@ async function main() {
       estado: EstadoSocio.AL_DIA,
       ingreso: haceAnios(0, 2),
       permisoHasta: hasta,
+    });
+  }
+
+  // Rango de documentos propio para el grupo familiar. Sin esto, agregar casos más
+  // arriba les corre el DNI y una segunda corrida los saltea por duplicados.
+  dni = 31000000;
+
+  // Un grupo familiar: el titular paga una sola cuota por los cuatro, y los tres que
+  // cuelgan de él aparecen igual en el padrón, cada uno con su número.
+  const titular = await crear({
+    nombre: 'Ferrari, Marcelo',
+    categoria: CategoriaSocio.ACTIVO,
+    estado: EstadoSocio.AL_DIA,
+    ingreso: haceAnios(14),
+  });
+  if (titular) {
+    await crear({
+      categoria: CategoriaSocio.ACTIVO,
+      estado: EstadoSocio.AL_DIA,
+      ingreso: haceAnios(14),
+      titularId: titular,
+      parentesco: 'Cónyuge',
+      nombre: 'Ferrari, Alicia',
+    });
+    await crear({
+      categoria: CategoriaSocio.CADETE,
+      estado: EstadoSocio.AL_DIA,
+      ingreso: haceAnios(14),
+      nacimiento: haceAnios(15),
+      titularId: titular,
+      parentesco: 'Hija',
+      nombre: 'Ferrari, Julieta',
+    });
+    await crear({
+      categoria: CategoriaSocio.CADETE,
+      estado: EstadoSocio.AL_DIA,
+      ingreso: haceAnios(11),
+      nacimiento: haceAnios(11),
+      titularId: titular,
+      parentesco: 'Hijo',
+      nombre: 'Ferrari, Bruno',
     });
   }
 

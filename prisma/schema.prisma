@@ -217,13 +217,6 @@ model RolAsignado {
   @@index([rol])
 }
 
-model GrupoFamiliar {
-  id        String   @id @default(cuid())
-  nombre    String
-  integrantes Socio[]
-  creadoEn  DateTime @default(now())
-}
-
 model Socio {
   id            String         @id @default(cuid())
   numeroSocio   Int            @unique
@@ -236,9 +229,13 @@ model Socio {
   /// Sólo para TRANSEUNTE: el permiso caduca solo y con él los beneficios (art. 14 e).
   permisoHasta  DateTime?
 
-  grupoFamiliarId String?
-  grupoFamiliar   GrupoFamiliar? @relation(fields: [grupoFamiliarId], references: [id])
-  esTitular       Boolean        @default(false)
+  /// Grupo familiar. No es una entidad aparte: el grupo **es** el titular y los que
+  /// cuelgan de él, y se llama como él. Nulo en el titular y en el socio suelto.
+  titularId       String?
+  titular         Socio?         @relation("GrupoFamiliar", fields: [titularId], references: [id])
+  familiares      Socio[]        @relation("GrupoFamiliar")
+  /// Parentesco con el titular. Sólo tiene sentido junto con `titularId`.
+  parentesco      String?
 
   /// Cobrador asignado, cuando el socio está en una cartera de cobranza a domicilio.
   cobradorId    String?
@@ -261,6 +258,7 @@ model Socio {
 
   @@index([estado])
   @@index([categoria])
+  @@index([titularId])
 }
 
 /**

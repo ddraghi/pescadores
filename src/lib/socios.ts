@@ -108,3 +108,37 @@ export const EDAD_FIN_CADETE = 18;
  * del apto. El médico puede poner otro en cada caso.
  */
 export const DIAS_APTO_POR_DEFECTO = 15;
+
+// ─── Grupo familiar ──────────────────────────────────────────────────────────
+
+/**
+ * Parentescos con el titular del grupo familiar.
+ *
+ * Se guarda el texto y no un enum: el estatuto no fija una lista, y cuando aparezca un
+ * caso que no está —una sobrina a cargo, por ejemplo— tiene que poder cargarse sin una
+ * migración de por medio.
+ */
+export const PARENTESCOS = [
+  'Cónyuge',
+  'Hijo',
+  'Hija',
+  'Padre',
+  'Madre',
+  'Hermano',
+  'Hermana',
+  'Nieto',
+  'Nieta',
+  'Otro',
+] as const;
+
+/**
+ * Categoría que le corresponde a alguien por su edad.
+ *
+ * Sirve para no preguntarla al cargar un familiar: con la fecha de nacimiento alcanza.
+ * Después se cambia desde el padrón, que es donde el cambio queda asentado como acto
+ * (art. 14 inc. d).
+ */
+export function categoriaPorEdad(fechaNacimiento: Date | null, hoy = new Date()): 'ACTIVO' | 'CADETE' {
+  if (!fechaNacimiento) return 'ACTIVO';
+  return edad(fechaNacimiento, hoy) < EDAD_FIN_CADETE ? 'CADETE' : 'ACTIVO';
+}

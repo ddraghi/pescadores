@@ -5,12 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Campo, Casilla, Selector } from '@/components/ui/campos';
 import { CATEGORIAS, AYUDA_CATEGORIA, type NombreCategoria } from '@/lib/socios';
 import type { SocioEnLista } from '@/lib/datos/socios';
-
-export interface GrupoOpcion {
-  id: string;
-  nombre: string;
-  integrantes: number;
-}
+import { GrupoFamiliar } from './grupo-familiar';
 
 /**
  * Alta y edición de un socio. Junta los datos de la persona y los de su ficha, que en
@@ -19,19 +14,17 @@ export interface GrupoOpcion {
  */
 export function CamposSocio({
   socio,
-  grupos,
   proximoNumero,
 }: {
   socio?: SocioEnLista;
-  grupos: GrupoOpcion[];
   proximoNumero: number;
 }) {
   const [categoria, setCategoria] = useState<NombreCategoria>(
     (socio?.categoria as NombreCategoria) ?? 'ACTIVO',
   );
-  const [familia, setFamilia] = useState<'ninguno' | 'existente' | 'nuevo'>(
-    socio?.grupoFamiliarId ? 'existente' : 'ninguno',
-  );
+  // El nombre se sigue con estado porque el grupo familiar se llama como el titular:
+  // conviene que se vea cambiar mientras se escribe.
+  const [nombre, setNombre] = useState(socio?.nombre ?? '');
   const editando = Boolean(socio);
 
   return (
@@ -43,7 +36,14 @@ export function CamposSocio({
       </p>
 
       <Campo etiqueta="Nombre y apellido" htmlFor="nombre">
-        <Input id="nombre" name="nombre" defaultValue={socio?.nombre} required autoFocus />
+        <Input
+          id="nombre"
+          name="nombre"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          required
+          autoFocus
+        />
       </Campo>
 
       <div className="grid grid-cols-2 gap-3">
@@ -130,45 +130,12 @@ export function CamposSocio({
         Grupo familiar
       </p>
 
-      <Campo etiqueta="Pertenece a" htmlFor="familia">
-        <Selector
-          id="familia"
-          value={familia}
-          onChange={(e) => setFamilia(e.target.value as typeof familia)}
-        >
-          <option value="ninguno">Sin grupo familiar</option>
-          <option value="existente">Sumarlo a un grupo que ya existe</option>
-          <option value="nuevo">Crear un grupo nuevo</option>
-        </Selector>
-      </Campo>
-
-      {familia === 'existente' && (
-        <Campo etiqueta="Grupo" htmlFor="grupoFamiliarId">
-          <Selector id="grupoFamiliarId" name="grupoFamiliarId" defaultValue={socio?.grupoFamiliarId ?? ''} required>
-            <option value="">Elegí un grupo</option>
-            {grupos.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.nombre} ({g.integrantes})
-              </option>
-            ))}
-          </Selector>
-        </Campo>
-      )}
-
-      {familia === 'nuevo' && (
-        <Campo etiqueta="Nombre del grupo" htmlFor="grupoFamiliarNuevo" ayuda="Por ejemplo, el apellido de la familia.">
-          <Input id="grupoFamiliarNuevo" name="grupoFamiliarNuevo" required />
-        </Campo>
-      )}
-
-      {familia !== 'ninguno' && (
-        <Casilla
-          name="esTitular"
-          etiqueta="Es el titular del grupo"
-          ayuda="El titular es quien responde por la cuota del grupo."
-          defaultChecked={socio?.esTitular}
-        />
-      )}
+      <GrupoFamiliar
+        nombreTitular={nombre}
+        familiares={socio?.familiares ?? []}
+        perteneceA={socio?.titularId ? socio.grupoFamiliar : null}
+        proximoNumero={proximoNumero + 1}
+      />
 
       <p className="pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Acceso a la plataforma

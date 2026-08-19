@@ -30,17 +30,17 @@ const tarifario: ItemPrecio[] = [
 ];
 
 const socios: SocioParaCuota[] = [
-  { id: 'activo-suelto', categoria: 'ACTIVO', estado: 'AL_DIA', grupoFamiliarId: null, esTitular: false },
-  { id: 'activo-moroso', categoria: 'ACTIVO', estado: 'MOROSO', grupoFamiliarId: null, esTitular: false },
-  { id: 'cadete', categoria: 'CADETE', estado: 'AL_DIA', grupoFamiliarId: null, esTitular: false },
-  { id: 'vitalicio', categoria: 'VITALICIO', estado: 'AL_DIA', grupoFamiliarId: null, esTitular: false },
-  { id: 'honorario', categoria: 'HONORARIO', estado: 'AL_DIA', grupoFamiliarId: null, esTitular: false },
-  { id: 'en-licencia', categoria: 'ACTIVO', estado: 'LICENCIA', grupoFamiliarId: null, esTitular: false },
-  { id: 'cesante', categoria: 'ACTIVO', estado: 'CESANTE', grupoFamiliarId: null, esTitular: false },
-  { id: 'expulsado', categoria: 'ACTIVO', estado: 'EXPULSADO', grupoFamiliarId: null, esTitular: false },
-  { id: 'titular', categoria: 'ACTIVO', estado: 'AL_DIA', grupoFamiliarId: 'flia', esTitular: true },
-  { id: 'esposa', categoria: 'ACTIVO', estado: 'AL_DIA', grupoFamiliarId: 'flia', esTitular: false },
-  { id: 'hijo', categoria: 'CADETE', estado: 'AL_DIA', grupoFamiliarId: 'flia', esTitular: false },
+  { id: 'activo-suelto', categoria: 'ACTIVO', estado: 'AL_DIA', titularId: null, familiares: 0 },
+  { id: 'activo-moroso', categoria: 'ACTIVO', estado: 'MOROSO', titularId: null, familiares: 0 },
+  { id: 'cadete', categoria: 'CADETE', estado: 'AL_DIA', titularId: null, familiares: 0 },
+  { id: 'vitalicio', categoria: 'VITALICIO', estado: 'AL_DIA', titularId: null, familiares: 0 },
+  { id: 'honorario', categoria: 'HONORARIO', estado: 'AL_DIA', titularId: null, familiares: 0 },
+  { id: 'en-licencia', categoria: 'ACTIVO', estado: 'LICENCIA', titularId: null, familiares: 0 },
+  { id: 'cesante', categoria: 'ACTIVO', estado: 'CESANTE', titularId: null, familiares: 0 },
+  { id: 'expulsado', categoria: 'ACTIVO', estado: 'EXPULSADO', titularId: null, familiares: 0 },
+  { id: 'titular', categoria: 'ACTIVO', estado: 'AL_DIA', titularId: null, familiares: 2 },
+  { id: 'esposa', categoria: 'ACTIVO', estado: 'AL_DIA', titularId: 'titular', familiares: 0 },
+  { id: 'hijo', categoria: 'CADETE', estado: 'AL_DIA', titularId: 'titular', familiares: 0 },
 ];
 
 const { cuotas, excluidos } = calcularCuotasDelPeriodo(socios, tarifario, {

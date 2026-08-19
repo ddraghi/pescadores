@@ -141,9 +141,22 @@ export async function generarCuotas(_prev: Resp | null, datos: FormData): Promis
       return fallo('Todavía no hay ninguna cuota social cargada en el tarifario.');
     }
 
-    const socios = await prisma.socio.findMany({
-      select: { id: true, categoria: true, estado: true, grupoFamiliarId: true, esTitular: true },
+    const registros = await prisma.socio.findMany({
+      select: {
+        id: true,
+        categoria: true,
+        estado: true,
+        titularId: true,
+        _count: { select: { familiares: true } },
+      },
     });
+    const socios = registros.map((s) => ({
+      id: s.id,
+      categoria: s.categoria,
+      estado: s.estado,
+      titularId: s.titularId,
+      familiares: s._count.familiares,
+    }));
 
     // Quién paga y cuánto se decide en `calcularCuotasDelPeriodo`, que es una función
     // pura y está probada con `npm run probar:cuotas`.

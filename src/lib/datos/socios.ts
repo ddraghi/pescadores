@@ -11,6 +11,16 @@ export interface FiltrosPadron {
   pagina?: number;
 }
 
+/** Un integrante del grupo, como se carga y se muestra dentro de la ficha del titular. */
+export interface FamiliarEnFicha {
+  id: string;
+  numeroSocio: number;
+  nombre: string;
+  dni: string;
+  fechaNacimiento: string | null;
+  parentesco: string | null;
+}
+
 export interface SocioEnLista {
   id: string;
   numeroSocio: number;
@@ -25,9 +35,17 @@ export interface SocioEnLista {
   telefono: string | null;
   usuario: string | null;
   observaciones: string | null;
-  grupoFamiliarId: string | null;
-  grupoFamiliarNombre: string | null;
+  /** Titular del grupo, si este socio cuelga de otro. */
+  titularId: string | null;
+  /**
+   * Nombre del grupo familiar, que es el del titular. En el titular es su propio
+   * nombre; en un socio suelto, nulo.
+   */
+  grupoFamiliar: string | null;
   esTitular: boolean;
+  parentesco: string | null;
+  /** Los que cuelgan de él. Vacío salvo en un titular. */
+  familiares: FamiliarEnFicha[];
   antiguedad: number;
 }
 
@@ -76,7 +94,16 @@ export async function buscarSocios(filtros: FiltrosPadron) {
       take: POR_PAGINA,
       include: {
         persona: true,
-        grupoFamiliar: { select: { id: true, nombre: true } },
+        titular: { select: { persona: { select: { nombre: true } } } },
+        familiares: {
+          orderBy: { numeroSocio: "asc" },
+          select: {
+            id: true,
+            numeroSocio: true,
+            parentesco: true,
+            persona: { select: { nombre: true, dni: true, fechaNacimiento: true } },
+          },
+        },
       },
     }),
   ]);
@@ -96,9 +123,20 @@ export async function buscarSocios(filtros: FiltrosPadron) {
     telefono: s.persona.telefono,
     usuario: s.persona.usuario,
     observaciones: s.observaciones,
-    grupoFamiliarId: s.grupoFamiliarId,
-    grupoFamiliarNombre: s.grupoFamiliar?.nombre ?? null,
-    esTitular: s.esTitular,
+    titularId: s.titularId,
+    // El grupo se llama como su titular: si este socio es el titular, es su propio
+    // nombre; si cuelga de otro, el del otro.
+    grupoFamiliar: s.titular?.persona.nombre ?? (s.familiares.length > 0 ? s.persona.nombre : null),
+    esTitular: s.familiares.length > 0,
+    parentesco: s.parentesco,
+    familiares: s.familiares.map((f) => ({
+      id: f.id,
+      numeroSocio: f.numeroSocio,
+      nombre: f.persona.nombre,
+      dni: f.persona.dni,
+      fechaNacimiento: aISO(f.persona.fechaNacimiento),
+      parentesco: f.parentesco,
+    })),
     antiguedad: hoy.getFullYear() - s.fechaIngreso.getFullYear(),
   }));
 
@@ -108,15 +146,6 @@ export async function buscarSocios(filtros: FiltrosPadron) {
     pagina,
     paginas: Math.max(1, Math.ceil(total / POR_PAGINA)),
   };
-}
-
-/** Los grupos familiares que ya existen, para poder sumar a alguien a uno. */
-export async function listarGruposFamiliares() {
-  const grupos = await prisma.grupoFamiliar.findMany({
-    orderBy: { nombre: 'asc' },
-    select: { id: true, nombre: true, _count: { select: { integrantes: true } } },
-  });
-  return grupos.map((g) => ({ id: g.id, nombre: g.nombre, integrantes: g._count.integrantes }));
 }
 
 /** Totales por estado, para el encabezado del padrón. */
