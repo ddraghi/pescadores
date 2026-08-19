@@ -191,6 +191,7 @@ model Persona {
   aptosEmitidos  Habilitacion[]   @relation("HabilitacionEmisor")
   carteraDe      Socio[]          @relation("SocioCobrador")
   accionesDispositivo AccionDispositivo[]
+  gruposQueDicta      Grupo[]
 
   creadoEn       DateTime @default(now())
   actualizadoEn  DateTime @updatedAt
@@ -252,6 +253,8 @@ model Socio {
   lotes         Lote[]
   cobros        Cobro[]
   actos         ActoEstatutario[]
+  inscripciones InscripcionGrupo[]
+  asistencias   Asistencia[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -315,6 +318,7 @@ model Predio {
   lotes         Lote[]
   dispositivos  Dispositivo[]
   croquis       Croquis[]
+  grupos        Grupo[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -406,6 +410,7 @@ model Actividad {
   activo        Boolean  @default(true)
 
   predios       ActividadPredio[]
+  grupos        Grupo[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -503,6 +508,7 @@ model Lote {
   fechaAdjudicacion DateTime?
 
   autorizaciones AutorizacionEstadia[]
+  transferencias TransferenciaLote[]
 
   creadoEn       DateTime @default(now())
   actualizadoEn  DateTime @updatedAt
@@ -834,4 +840,107 @@ model AccionDispositivo {
 
   @@index([dispositivoId, creadoEn])
   @@index([aplicadaEn])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Actividades: grupos, horarios y asistencia
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Un grupo de una actividad, a cargo de un profesor: "Fútbol infantil", "Natación
+/// adultos". El profesor arma los suyos y les carga los horarios.
+model Grupo {
+  id          String    @id @default(cuid())
+  actividadId String
+  actividad   Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  predioId    String?
+  predio      Predio?   @relation(fields: [predioId], references: [id])
+
+  nombre      String
+  profesorId  String?
+  profesor    Persona?  @relation(fields: [profesorId], references: [id])
+  /// Cuántos entran. Cero significa sin límite.
+  cupo        Int       @default(0)
+  activo      Boolean   @default(true)
+
+  horarios      HorarioGrupo[]
+  inscripciones InscripcionGrupo[]
+  asistencias   Asistencia[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([actividadId])
+  @@index([profesorId])
+}
+
+model HorarioGrupo {
+  id      String @id @default(cuid())
+  grupoId String
+  grupo   Grupo  @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+
+  /// 1 = lunes.
+  dia     Int
+  hora    String
+  minutos Int    @default(60)
+
+  @@index([grupoId])
+}
+
+model InscripcionGrupo {
+  id      String @id @default(cuid())
+  grupoId String
+  grupo   Grupo  @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+  socioId String
+  socio   Socio  @relation(fields: [socioId], references: [id], onDelete: Cascade)
+
+  desde   DateTime @default(now())
+  activa  Boolean  @default(true)
+
+  @@unique([grupoId, socioId])
+  @@index([socioId])
+}
+
+/// Asistencia de una fecha. Se guarda sólo lo que el profesor marca.
+model Asistencia {
+  id      String   @id @default(cuid())
+  grupoId String
+  grupo   Grupo    @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+  socioId String
+  socio   Socio    @relation(fields: [socioId], references: [id], onDelete: Cascade)
+
+  /// Día de la clase, sin hora.
+  fecha    DateTime
+  presente Boolean  @default(true)
+
+  @@unique([grupoId, socioId, fecha])
+  @@index([grupoId, fecha])
+}
+
+/**
+ * Transferencia de las mejoras de un lote del barrio de fin de semana.
+ *
+ * El reglamento las mide en cantidad de cuotas sociales (arts. 19 y 20) y exige que el
+ * nuevo adjudicatario quede encuadrado antes de aprobarla (art. 18).
+ */
+model TransferenciaLote {
+  id       String @id @default(cuid())
+  loteId   String
+  lote     Lote   @relation(fields: [loteId], references: [id], onDelete: Cascade)
+
+  /// Nombres congelados: el socio puede dejar de serlo y la constancia tiene que quedar.
+  vendedor  String
+  comprador String
+  /// Derechos de transferencia y de adjudicación, en cantidad de cuotas sociales.
+  cuotasTransferencia Int @default(0)
+  cuotasAdjudicacion  Int @default(0)
+  /// Entre familiares directos, por única vez, va sin cargo (art. 22 del anexo).
+  entreFamiliares Boolean @default(false)
+
+  fecha    DateTime
+  aprobada Boolean  @default(false)
+  notas    String?
+
+  creadoEn DateTime @default(now())
+
+  @@index([loteId])
 }

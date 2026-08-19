@@ -42,6 +42,7 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Personal',         href: '/secretaria/personal',    icono: KeyRound,    etapa: 2 },
     { etiqueta: 'Socios',           href: '/secretaria/socios',      icono: Users,       etapa: 3 },
     { etiqueta: 'Actos estatutarios', href: '/secretaria/actos',     icono: FileText,    etapa: 3 },
+    { etiqueta: 'Barrio de fin de semana', href: '/secretaria/barrio', icono: Home,      etapa: 8 },
   ],
 
   TESORERO: [
@@ -91,7 +92,8 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Panel',            href: '/maestranza',        icono: Home,       etapa: 1 },
     { etiqueta: 'Dispositivos',     href: '/maestranza/dispositivos', icono: Settings,   etapa: 6 },
     { etiqueta: 'Croquis',          href: '/maestranza/croquis',      icono: MapPin,     etapa: 6 },
-    { etiqueta: 'Mis tareas',       href: '/maestranza/tareas', icono: ListChecks, etapa: 8 },
+    // Pendiente de definición funcional del cliente.
+    { etiqueta: 'Mis tareas',       href: '/maestranza/tareas', icono: ListChecks, etapa: 9 },
     { etiqueta: 'Fichaje',          href: '/maestranza/fichaje', icono: Wrench,    etapa: 8 },
   ],
 
@@ -99,13 +101,15 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Panel',            href: '/profesor',           icono: Home,          etapa: 1 },
     { etiqueta: 'Mis grupos',       href: '/profesor/grupos',    icono: Users,         etapa: 8 },
     { etiqueta: 'Horarios',         href: '/profesor/horarios',  icono: CalendarDays,  etapa: 8 },
-    { etiqueta: 'Rutinas',          href: '/profesor/rutinas',   icono: ClipboardList, etapa: 8 },
+    // Gimnasio: es un port directo de netgym, se hace cuando el club lo necesite.
+    { etiqueta: 'Rutinas',          href: '/profesor/rutinas',   icono: ClipboardList, etapa: 9 },
     { etiqueta: 'Asistencia',       href: '/profesor/asistencia', icono: ListChecks,   etapa: 8 },
   ],
 
   CONCESIONARIO: [
     { etiqueta: 'Panel',            href: '/concesion',          icono: Home,        etapa: 1 },
-    { etiqueta: 'Punto de venta',   href: '/concesion/ventas',   icono: ShoppingBag, etapa: 8 },
+    // Pendiente de definición funcional del cliente.
+    { etiqueta: 'Punto de venta',   href: '/concesion/ventas',   icono: ShoppingBag, etapa: 9 },
   ],
 
   MEDICO: [
@@ -123,12 +127,13 @@ export const MENUS: Record<Rol, ItemMenu[]> = {
     { etiqueta: 'Mis reservas',     href: '/socio/reservas',     icono: CalendarDays, etapa: 7 },
     { etiqueta: 'Mi credencial',    href: '/socio/credencial',   icono: ScanLine,    etapa: 7 },
     { etiqueta: 'Mi apto médico',   href: '/socio/apto',         icono: Stethoscope, etapa: 7 },
+    { etiqueta: 'Mi vivienda',      href: '/socio/vivienda',     icono: KeyRound,    etapa: 8 },
     { etiqueta: 'Avisos',           href: '/socio/avisos',       icono: Bell,        etapa: 7 },
   ],
 };
 
 /** Etapa del plan ya construida. Subir este número enciende los ítems de esa etapa. */
-export const ETAPA_ACTUAL = 7;
+export const ETAPA_ACTUAL = 8;
 
 export function disponible(item: ItemMenu): boolean {
   return item.etapa <= ETAPA_ACTUAL;

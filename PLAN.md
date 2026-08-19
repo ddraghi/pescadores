@@ -190,11 +190,31 @@ El panel del socio se entra **por el predio**, que es como piensa el socio: no d
 
 ---
 
-## Etapa 8 — Lo que quedó para el final
-**~2-3 sesiones**
+## Etapa 8 — Lo que quedó para el final ✅
+**~1 sesión · HECHA**
 
-Profesores con grupos y rutinas, barrio de viviendas de fin de semana, Maestranza y
-Concesionarios (ambos pendientes de definición funcional).
+Lo que no entraba en ninguna etapa anterior, y que sale casi todo del reglamento del
+barrio y de la vida diaria del personal.
+
+- **Profesor**: sus grupos dentro de las actividades que carga Secretaría, con horarios
+  y cupo; alumnos por grupo; y **toma de asistencia** que arranca con todos presentes y
+  se destildan las faltas — en una clase normal faltan dos o tres, no la mitad
+- **Barrio del Nihuil**: lotes en concesión precaria con el control del art. 3 (socio
+  activo o vitalicio, dos años de antigüedad, eximible si abonó lo que fijó la comisión)
+- **Permisos de estadía**: los pide el adjudicatario desde su panel con los nombres
+  declarados uno por línea, los aprueba Secretaría, y la portería los ve. Máximo 15 días
+  (art. 10). Sin permiso aprobado no pasan, que es todo el punto
+- **Transferencias de lote** medidas en cantidad de cuotas sociales y no en pesos
+  (arts. 19 y 20): así no quedan desactualizadas cuando la cuota cambia
+- **Fichaje del personal**: entrada y salida con un botón, y el control horario del Jefe
+  de predio
+- **`PENDIENTES.md`**: todo lo que falta para producción, en un solo lugar
+
+### Lo que quedó afuera
+
+- **Maestranza y Concesionarios**: siguen pendientes de definición funcional del cliente.
+  Entran, operan dispositivos y fichan; nada más, porque nadie dijo qué más
+- **Rutinas de gimnasio** y **punto de venta**: en el menú, apagados en etapa 9
 
 ---
 

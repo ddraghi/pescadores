@@ -11,9 +11,12 @@ entienda las convenciones sin releer el código ni volver a netgym. Mantenerlo a
 
 ## Estado
 
-Ver `PLAN.md`. Cada etapa termina en algo usable; conviene una etapa por sesión.
+Ver `PLAN.md` para el detalle de cada etapa y **`PENDIENTES.md` para lo que falta**.
+Ese último archivo es el que hay que abrir antes de prometerle algo al cliente.
 
-**Etapas 0 a 7 hechas** (la 6, en su mitad de plataforma). Siguiente: etapa 8.
+**Las nueve etapas están hechas** (la 6, sólo en su mitad de plataforma). Lo que queda no
+es una etapa más: es hardware, definiciones del cliente y puesta en producción, y está
+todo listado en `PENDIENTES.md`.
 
 El panel del socio se entra **por el predio**: pantalla principal con una tarjeta por
 predio, menú lateral con lo del club. Las actividades están en los dos lugares.
