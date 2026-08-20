@@ -17,7 +17,7 @@ import { prisma } from '@/lib/prisma';
 import { exigirCapacidadApi } from '@/lib/auth';
 import { prediosDelRolActivo } from '@/lib/sesion';
 import { casilla, fallo, numero, texto, traducirError, EXITO } from '@/lib/acciones/comun';
-import { estadoVisible, viaPermitida, VIAS } from '@/lib/dispositivos';
+import { estadoVisible, muestraConexion, viaPermitida, VIAS } from '@/lib/dispositivos';
 
 type Resp = { ok: true } | { ok: false; error: string };
 
@@ -160,6 +160,14 @@ export async function accionar(dispositivoId: string, encender: boolean): Promis
 
     const d = r.dispositivo;
     if (!d.activo) return fallo('El dispositivo está dado de baja.');
+
+    // Los de acceso no se alternan desde el croquis: trabajan por pulso y se abren
+    // desde la pantalla de la portería, donde además queda registrado quién pasó.
+    if (muestraConexion(d.proposito)) {
+      return fallo(
+        'Los accesos se abren desde la pantalla de la portería o del punto de control, no desde el croquis: así queda registrado quién pasó.',
+      );
+    }
 
     const simulado = process.env.SIMULAR_DISPOSITIVOS === 'true';
     const visible = estadoVisible(d.estado, d.estadoEn, { simulado });

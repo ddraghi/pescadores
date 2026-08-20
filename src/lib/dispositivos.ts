@@ -29,6 +29,23 @@ export type NombreVia = keyof typeof VIAS;
 /** Las que no salen a internet para dar la orden. */
 export const VIAS_LOCALES: NombreVia[] = ['relay_usb', 'sonoff_lan'];
 
+/**
+ * Propósitos cuyo testigo informa conexión y no encendido/apagado.
+ *
+ * Un interruptor de acceso trabaja por pulso: el MINI-D abre y vuelve solo al reposo,
+ * así que un testigo de encendido/apagado no estaría diciendo cómo está la puerta sino
+ * cómo está el relé, que es casi siempre lo mismo y no sirve para nada. Abrir es cosa
+ * del portero y del punto de control, desde su pantalla y con su botón. En el croquis
+ * alcanza con saber si el aparato responde.
+ */
+export const SOLO_CONEXION: NombreProposito[] = ['ACCESO'];
+
+export function muestraConexion(proposito: string): boolean {
+  return SOLO_CONEXION.includes(proposito as NombreProposito);
+}
+
+export type Conexion = 'EN_LINEA' | 'SIN_CONEXION';
+
 export type EstadoVisible = 'ENCENDIDO' | 'APAGADO' | 'SIN_DATO';
 
 /**
@@ -58,6 +75,24 @@ export function estadoVisible(
   const ahora = opciones.ahora ?? new Date();
   const antiguedad = (ahora.getTime() - estadoEn.getTime()) / 1000;
   return antiguedad <= FRESCURA_SEGUNDOS ? estado : 'SIN_DATO';
+}
+
+/**
+ * ¿Está respondiendo el aparato?
+ *
+ * Se mide con la misma frescura que el estado, porque es el mismo dato: si el nodo dejó
+ * de reportar, del otro lado no hay nadie.
+ */
+export function conexionVisible(
+  estadoEn: Date | null,
+  opciones: { ahora?: Date; simulado?: boolean } = {},
+): Conexion {
+  if (opciones.simulado) return 'EN_LINEA';
+  if (!estadoEn) return 'SIN_CONEXION';
+
+  const ahora = opciones.ahora ?? new Date();
+  const antiguedad = (ahora.getTime() - estadoEn.getTime()) / 1000;
+  return antiguedad <= FRESCURA_SEGUNDOS ? 'EN_LINEA' : 'SIN_CONEXION';
 }
 
 /**

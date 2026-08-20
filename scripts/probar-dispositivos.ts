@@ -7,7 +7,14 @@
  * que alguien apriete creyendo que enciende una bomba y en realidad la apague.
  */
 
-import { estadoVisible, viaPermitida, nombrarDias, FRESCURA_SEGUNDOS } from '../src/lib/dispositivos';
+import {
+  conexionVisible,
+  estadoVisible,
+  muestraConexion,
+  nombrarDias,
+  viaPermitida,
+  FRESCURA_SEGUNDOS,
+} from '../src/lib/dispositivos';
 
 let fallas = 0;
 
@@ -48,6 +55,19 @@ comprobar('los siete    ', nombrarDias([1, 2, 3, 4, 5, 6, 7]), 'todos los días'
 comprobar('uno solo     ', nombrarDias([3]), 'Mi');
 comprobar('tres días    ', nombrarDias([1, 3, 5]), 'Lu, Mi y Vi');
 comprobar('fin de semana', nombrarDias([6, 7]), 'Sá y Do');
+
+console.log('\nLos de acceso informan conexión, no encendido/apagado');
+comprobar('acceso        ', muestraConexion('ACCESO'), true);
+comprobar('bomba         ', muestraConexion('BOMBA'), false);
+comprobar('iluminación   ', muestraConexion('ILUMINACION'), false);
+comprobar('riego         ', muestraConexion('RIEGO'), false);
+
+console.log('\nConexión: o reportó hace poco, o no reportó');
+comprobar('reportó hace 5 s   ', conexionVisible(haceSegundos(5), { ahora: AHORA }), 'EN_LINEA');
+comprobar('justo en el límite ', conexionVisible(haceSegundos(FRESCURA_SEGUNDOS), { ahora: AHORA }), 'EN_LINEA');
+comprobar('un segundo tarde   ', conexionVisible(haceSegundos(FRESCURA_SEGUNDOS + 1), { ahora: AHORA }), 'SIN_CONEXION');
+comprobar('nunca reportó      ', conexionVisible(null, { ahora: AHORA }), 'SIN_CONEXION');
+comprobar('simulado, sin datos', conexionVisible(null, { ahora: AHORA, simulado: true }), 'EN_LINEA');
 
 console.log(fallas === 0 ? '\nTodo bien.\n' : `\n${fallas} comprobaciones fallaron.\n`);
 process.exit(fallas === 0 ? 0 : 1);

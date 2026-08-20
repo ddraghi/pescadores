@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { accionar } from '@/lib/acciones/dispositivos';
-import { PROPOSITOS, type EstadoVisible, type NombreProposito } from '@/lib/dispositivos';
+import {
+  PROPOSITOS,
+  muestraConexion,
+  type Conexion,
+  type EstadoVisible,
+  type NombreProposito,
+} from '@/lib/dispositivos';
 
 export interface DispositivoTestigo {
   id: string;
@@ -13,6 +19,8 @@ export interface DispositivoTestigo {
   proposito: string;
   ubicacion: string | null;
   estado: EstadoVisible;
+  /** Si el aparato está respondiendo. Es lo único que se muestra de los de acceso. */
+  conexion: Conexion;
   requiereConfirmacion: boolean;
   activo: boolean;
   /** Cuándo fue la última lectura, ya en texto. */
@@ -30,6 +38,63 @@ const TEXTOS: Record<EstadoVisible, string> = {
   APAGADO: 'Apagado',
   SIN_DATO: 'Sin dato',
 };
+
+/**
+ * Testigo de un aparato de acceso: sólo dice si está en línea.
+ *
+ * No se toca y no informa encendido ni apagado. El MINI-D de una portería trabaja por
+ * pulso —abre y vuelve solo—, así que su relé está en reposo casi siempre y mostrarlo
+ * sería mentir sobre el estado de la puerta. Abrir se hace desde la pantalla del
+ * portero o del punto de control, que es donde además queda registrado quién pasó.
+ */
+function TestigoDeConexion({
+  dispositivo,
+  compacto,
+}: {
+  dispositivo: DispositivoTestigo;
+  compacto?: boolean;
+}) {
+  const enLinea = dispositivo.conexion === 'EN_LINEA' && dispositivo.activo;
+
+  return (
+    <div className={cn('flex flex-col', compacto ? 'items-center gap-1' : 'gap-1.5')}>
+      <div
+        aria-label={`${dispositivo.nombre}: ${enLinea ? 'en línea' : 'sin conexión'}`}
+        title={
+          enLinea
+            ? `En línea${dispositivo.estadoEn ? ` · reportó ${dispositivo.estadoEn}` : ''}. Se abre desde la pantalla de la portería.`
+            : 'Sin conexión: el nodo del predio no está reportando este aparato.'
+        }
+        className={cn(
+          'flex items-center gap-2 rounded-full border-2',
+          compacto ? 'size-7 justify-center' : 'px-3 py-1.5',
+          enLinea
+            ? 'border-border bg-card'
+            : 'border-dashed border-muted-foreground/50 bg-transparent',
+        )}
+      >
+        <span
+          className={cn(
+            'block rounded-full',
+            compacto ? 'size-2.5' : 'size-2',
+            enLinea ? 'bg-paso-ok' : 'bg-muted-foreground/60',
+          )}
+        />
+        {!compacto && (
+          <span className="text-xs font-medium text-muted-foreground">
+            {enLinea ? 'En línea' : 'Sin conexión'}
+          </span>
+        )}
+      </div>
+
+      {!compacto && (
+        <div className="text-[11px] text-muted-foreground">
+          {PROPOSITOS[dispositivo.proposito as NombreProposito] ?? dispositivo.proposito}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * Luz testigo de un dispositivo. Tres estados, no dos.
@@ -51,6 +116,11 @@ export function Testigo({
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  // Los de acceso no se accionan desde acá: sólo se informa si responden.
+  if (muestraConexion(dispositivo.proposito)) {
+    return <TestigoDeConexion dispositivo={dispositivo} compacto={compacto} />;
+  }
 
   const sinDato = dispositivo.estado === 'SIN_DATO';
   const encendido = dispositivo.estado === 'ENCENDIDO';

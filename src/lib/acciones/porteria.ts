@@ -209,7 +209,10 @@ export async function confirmarIngreso(_prev: Resp | null, datos: FormData): Pro
     const sesion = await exigirCapacidadApi('ver_socios');
 
     const accesoId = texto(datos, 'accesoId');
-    const acceso = await prisma.acceso.findUnique({ where: { id: accesoId } });
+    const acceso = await prisma.acceso.findUnique({
+      where: { id: accesoId },
+      include: { dispositivo: { select: { id: true, activo: true } } },
+    });
     if (!acceso) return fallo('El puesto no existe.');
 
     // El portero y el control sólo operan en los predios que tienen asignados.
@@ -273,6 +276,21 @@ export async function confirmarIngreso(_prev: Resp | null, datos: FormData): Pro
           },
         });
         cobroId = cobro.id;
+      }
+
+      // La orden de apertura. El aparato de la portería trabaja por pulso —abre y
+      // vuelve solo—, así que una sola orden es una sola apertura. Queda pendiente
+      // hasta que el nodo del predio la ejecute y la complete.
+      if (permitido && acceso.dispositivo?.activo) {
+        await tx.accionDispositivo.create({
+          data: {
+            dispositivoId: acceso.dispositivo.id,
+            personaId: sesion.personaId,
+            accion: 'ENCENDER',
+            origen: 'SISTEMA',
+            aplicadaEn: process.env.SIMULAR_DISPOSITIVOS === 'true' ? ahora : null,
+          },
+        });
       }
 
       await tx.ingreso.create({
