@@ -55,14 +55,12 @@ interruptores» en `CLAUDE.md`.
 
 Lo que falta resolver de esto:
 
-- [ ] **Cuántas cabañas y bungalows tiene el Nihuil.** Define si el parque de aparatos
-      entra cómodo o al filo. Es lo primero que el club va a querer agregar
-      después de la entrega, y el predio donde más puede crecer el parque.
-- [ ] **Probar el MINI-D contra el protocolo local con una unidad.** La documentación de
-      la integración más usada avisa que *no todos los dispositivos soportan el protocolo
-      local*, y el MINI-D es nuevo y con Matter. Si no lo soporta queda descartado,
-      porque tampoco se puede flashear. **Es la prueba que hay que hacer primero de
-      todas**: si falla, cambia la elección de hardware de las porterías.
+- [ ] **Probar el MINI-D contra el protocolo local**, con una unidad y con
+      `npm run ewelink:probar` (ver abajo). La documentación de la integración más usada
+      avisa que *no todos los dispositivos soportan el protocolo local*, y el MINI-D es
+      nuevo y con Matter. Si no lo soporta queda descartado, porque tampoco se puede
+      flashear. **Es la prueba que hay que hacer primero de todas**: si falla, cambia la
+      elección de hardware de las cinco porterías.
 - [ ] **Reservas de DHCP** para cada interruptor en el router de cada predio. El
       descubrimiento por mDNS es la parte floja del protocolo local; con la IP fija
       guardada en `Dispositivo.direccion`, el nodo no descubre nada.
@@ -71,6 +69,29 @@ Lo que falta resolver de esto:
       del Secretario.
 - [ ] **Emparejar y configurar los interruptores de la entrega**, que es tarea de quien
       instala y no del club.
+
+#### Cómo se prueba un interruptor cuando llega
+
+Ya está escrito el protocolo local (`src/lib/ewelink/lan.ts`) y el script que lo ejerce.
+**No hace falta la cuenta de desarrollador para esta prueba**: la clave del aparato sale
+de la app de eWeLink o de su Wi-Fi de configuración.
+
+1. Vincular el interruptor en la app de eWeLink, como lo haría el club.
+2. Buscar su **IP** en el listado de clientes del router y dejarle la **reserva de
+   DHCP** hecha de una vez.
+3. Anotar el **ID** —está en la app y en la etiqueta— y la **clave** del aparato.
+4. Correr, desde una PC en la misma red:
+
+   ```bash
+   npm run ewelink:probar -- --ip 192.168.1.50 --id 10009a1b2c --clave abcd-1234-...
+   ```
+
+El script pregunta el estado, enciende, apaga, verifica que informe cada cambio y lo
+deja como estaba. Si el primer paso pasa, el modelo sirve.
+
+**Y después la prueba de verdad: repetirlo con el enlace a internet desconectado.** Es
+la única que contesta la pregunta que importa, que es si el club puede abrir la tranquera
+del Nihuil con Starlink caído.
 
 ### 1.2 Huella y QR: falta el agente
 
