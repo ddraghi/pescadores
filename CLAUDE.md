@@ -79,10 +79,15 @@ sistema. Esa restricción es la que manda sobre este diseño.
 - **La credencial de desarrollador vence cada año.** No corta la operación, corta el
   alta de aparatos nuevos. El aviso va en la pantalla del Secretario, con anticipación.
 
-**Alcance vendido:** 4 puntos de acceso por predio —entre porterías y puntos de
-control— y 10 interruptores para luces y bombas. Son 14 por predio, 70 en total, que
-entra holgado. Lo que pase de ahí el cliente lo tiene que ver, con su costo: la
-plataforma debería mostrar el contador contra lo contratado, sin bloquear nada.
+**El sistema no pone tope.** El alcance que se vende —4 puntos de acceso por predio,
+entre porterías y puntos de control, y 10 interruptores para luces y bombas— es una
+condición del contrato, no una restricción del software. Al entregar quedan configurados
+y emparejados los de ese alcance; si después el club quiere agregar más, puede, y la
+plataforma no se lo impide ni se lo reprocha.
+
+El único techo real es el de la **cuenta de eWeLink de cada predio** (~150 aparatos), y
+es una de las razones por las que están separadas: el club puede crecer sin chocarse con
+nada.
 
 **Panel del socio (etapa 7).** Menú lateral con lo del club; pantalla principal con una
 tarjeta por predio; adentro de cada predio, sus reservas y funciones. Las actividades

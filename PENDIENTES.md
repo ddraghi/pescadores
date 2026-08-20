@@ -56,8 +56,8 @@ interruptores» en `CLAUDE.md`.
 Lo que falta resolver de esto:
 
 - [ ] **Cuántas cabañas y bungalows tiene el Nihuil.** Define si el parque de aparatos
-      entra cómodo o al filo. Está fuera del alcance vendido, pero es lo primero que el
-      club va a querer agregar.
+      entra cómodo o al filo. Es lo primero que el club va a querer agregar
+      después de la entrega, y el predio donde más puede crecer el parque.
 - [ ] **Probar el MINI-D contra el protocolo local con una unidad.** La documentación de
       la integración más usada avisa que *no todos los dispositivos soportan el protocolo
       local*, y el MINI-D es nuevo y con Matter. Si no lo soporta queda descartado,
@@ -69,7 +69,8 @@ Lo que falta resolver de esto:
 - [ ] **Renovar la credencial de desarrollador de eWeLink una vez al año.** No corta la
       operación, corta el alta de aparatos nuevos. Va con aviso anticipado en la pantalla
       del Secretario.
-- [ ] **Contador de aparatos contra lo contratado** por predio, sin bloquear.
+- [ ] **Emparejar y configurar los interruptores de la entrega**, que es tarea de quien
+      instala y no del club.
 
 ### 1.2 Huella y QR: falta el agente
 
