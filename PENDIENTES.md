@@ -14,7 +14,9 @@ Nada de esto se puede saltear. Sin resolverlo, el sistema no puede atender gente
 ### 1.1 El nodo del predio no está escrito
 
 Es el pendiente más grande y el único que necesita **hardware sobre la mesa**: un Sonoff,
-un lector ZKTeco y una PC haciendo de portería.
+un lector ZKTeco y una PC haciendo de portería. El modelo de cada aparato ya está
+elegido —ver el cuadro de más abajo—, así que lo que falta es comprarlos y escribir el
+nodo contra ellos.
 
 Hoy `SIMULAR_DISPOSITIVOS=true` hace que las órdenes se den por aplicadas, para poder
 probar las pantallas. **Antes de producción hay que apagarlo**, y cuando se apague las
@@ -28,6 +30,28 @@ El contrato que ese nodo tiene que cumplir (también está en `CLAUDE.md`):
 - Bajarse `HorarioDispositivo` y **dispararlos él**. El servidor nunca dispara.
 - Conexión **siempre saliente**: por el CGNAT de Starlink nadie puede entrar al predio.
 - Cola local en SQLite para cobrar y abrir sin enlace, y sincronizar después en lote.
+
+**El hardware ya está elegido** (definición del cliente, 20/8/2026):
+
+| Dónde | Aparato | Por qué |
+|---|---|---|
+| Porterías | **Sonoff MINI-D** | Contacto seco con NA y NC. Las cerraduras eléctricas trabajan NA y las trabas magnéticas NC: el mismo aparato sirve para las dos sin que la plataforma tenga que saber cuál es. Y los aparatos de apertura son de 12 V, que no es lo que conmuta un interruptor de línea. |
+| Luces, contactores de bombas, riego | **Sonoff BASIC-R4** | Alcanza con conmutar la línea. |
+
+Dos cosas que se desprenden de esa elección:
+
+- **El pulso se configura en el aparato, no acá.** La orden que manda la plataforma
+  sigue siendo absoluta; cuánto dura la apertura lo resuelve el interruptor. Falta
+  decidir cómo se muestra un aparato de pulso en el croquis, porque un testigo de
+  encendido/apagado no es lo que corresponde a una puerta que vuelve sola.
+- **El contacto seco dice cómo está el relé, no cómo está la puerta.** Si hace falta
+  saber si la hoja quedó abierta, eso es un sensor aparte y hoy no está previsto en
+  ningún lado.
+
+Sobre el firmware: antes de comprar el lote hay que flashear **una** unidad de cada
+modelo y confirmar que se puede. Con firmware original hay que bajar la `deviceKey` de
+la nube de eWeLink una vez, con internet, y guardarla en el nodo; con Tasmota o ESPHome
+no hay nube en ningún momento, que es lo que conviene con bombas y riego.
 
 ### 1.2 Huella y QR: falta el agente
 

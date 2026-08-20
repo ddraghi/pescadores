@@ -36,7 +36,10 @@ El contrato que el nodo tiene que cumplir, cuando se escriba:
 ### Lo que el cliente ya definió para las etapas 6 y 7
 
 **Dispositivos (etapa 6).** Interruptores Sonoff de **un solo canal**, cada uno con su
-ID. Se registran con su ubicación y su para-qué (acceso, iluminación, bomba, riego,
+ID. En las porterías, **MINI-D**: da contacto seco con NA y NC, que es lo que piden las
+cerraduras eléctricas (NA) y las trabas magnéticas (NC), y los aparatos de apertura son
+de 12 V. Para luces, bombas y riego alcanza con **BASIC-R4**. El pulso de apertura se
+configura en el aparato, no en la plataforma. Se registran con su ubicación y su para-qué (acceso, iluminación, bomba, riego,
 otro), que además sirve de filtro para que no se mezclen las vistas. Croquis: **3 o 4
 por predio**, con los dispositivos ubicados encima como luces testigo que se tocan para
 cambiar de estado. Operan **jefe de predio, maestranza y portero**, y queda registro de
