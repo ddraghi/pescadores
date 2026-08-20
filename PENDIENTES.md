@@ -48,10 +48,28 @@ Dos cosas que se desprenden de esa elección:
   saber si la hoja quedó abierta, eso es un sensor aparte y hoy no está previsto en
   ningún lado.
 
-Sobre el firmware: antes de comprar el lote hay que flashear **una** unidad de cada
-modelo y confirmar que se puede. Con firmware original hay que bajar la `deviceKey` de
-la nube de eWeLink una vez, con internet, y guardarla en el nodo; con Tasmota o ESPHome
-no hay nube en ningún momento, que es lo que conviene con bombas y riego.
+Sobre el firmware: **el cliente no flashea nada** y ésa es la restricción que manda. Los
+interruptores van con su firmware original, vinculados en la app de eWeLink del predio,
+y la plataforma se trae sola la lista y las claves. Ver «Cómo se dan de alta los
+interruptores» en `CLAUDE.md`.
+
+Lo que falta resolver de esto:
+
+- [ ] **Cuántas cabañas y bungalows tiene el Nihuil.** Define si el parque de aparatos
+      entra cómodo o al filo. Está fuera del alcance vendido, pero es lo primero que el
+      club va a querer agregar.
+- [ ] **Probar el MINI-D contra el protocolo local con una unidad.** La documentación de
+      la integración más usada avisa que *no todos los dispositivos soportan el protocolo
+      local*, y el MINI-D es nuevo y con Matter. Si no lo soporta queda descartado,
+      porque tampoco se puede flashear. **Es la prueba que hay que hacer primero de
+      todas**: si falla, cambia la elección de hardware de las porterías.
+- [ ] **Reservas de DHCP** para cada interruptor en el router de cada predio. El
+      descubrimiento por mDNS es la parte floja del protocolo local; con la IP fija
+      guardada en `Dispositivo.direccion`, el nodo no descubre nada.
+- [ ] **Renovar la credencial de desarrollador de eWeLink una vez al año.** No corta la
+      operación, corta el alta de aparatos nuevos. Va con aviso anticipado en la pantalla
+      del Secretario.
+- [ ] **Contador de aparatos contra lo contratado** por predio, sin bloquear.
 
 ### 1.2 Huella y QR: falta el agente
 

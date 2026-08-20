@@ -56,6 +56,34 @@ duplica, no pasa nada.
 **Unificar** los dispositivos del molinete (hoy en `Acceso.dispositivoTipo/Ref`) con este
 registro nuevo.
 
+### Cómo se dan de alta los interruptores
+
+**El cliente no flashea nada.** Compra el interruptor, lo vincula en la app de eWeLink
+del predio, y en la plataforma lo elige de una lista. Todo lo demás lo resuelve el
+sistema. Esa restricción es la que manda sobre este diseño.
+
+- **La nube de eWeLink se usa sólo para dar de alta**: traer la lista de aparatos de la
+  cuenta y su clave de red local. **Nunca para operar.** Si se respeta eso, una caída de
+  la API no deja a nadie afuera —sólo impide registrar un aparato nuevo— y el tier
+  gratuito de desarrollador alcanza.
+- **Una cuenta de eWeLink por predio**, no una para todo el club. La referencia que se
+  repite es un tope de ~150 aparatos por cuenta, y el Nihuil solo puede crecer mucho si
+  ponen interruptores en los bungalows. Además, una cuenta con problemas afecta a un
+  predio y no a los cinco. Un solo App ID de desarrollador sirve para las cinco: así
+  funciona OAuth.
+- **Las cinco cuentas se configuran desde Secretaría**, juntas. El jefe de predio no las
+  ve y no las necesita: la llamada a la nube la hace el servidor central, y el nodo sólo
+  recibe la clave y la IP de cada aparato. Lo que sí hace falta en el predio es el
+  **acceso a la app de eWeLink**, porque vincular un interruptor exige estar parado al
+  lado apretando el botón.
+- **La credencial de desarrollador vence cada año.** No corta la operación, corta el
+  alta de aparatos nuevos. El aviso va en la pantalla del Secretario, con anticipación.
+
+**Alcance vendido:** 4 puntos de acceso por predio —entre porterías y puntos de
+control— y 10 interruptores para luces y bombas. Son 14 por predio, 70 en total, que
+entra holgado. Lo que pase de ahí el cliente lo tiene que ver, con su costo: la
+plataforma debería mostrar el contador contra lo contratado, sin bloquear nada.
+
 **Panel del socio (etapa 7).** Menú lateral con lo del club; pantalla principal con una
 tarjeta por predio; adentro de cada predio, sus reservas y funciones. Las actividades
 van en los **dos** lugares: el resumen en el lateral y las de cada predio adentro. Falta
